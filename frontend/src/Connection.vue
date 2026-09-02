@@ -89,7 +89,7 @@ onMounted(checkAll)
   margin: 0 auto;
   padding: 64px 24px;
   color: #19313a;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: 'Roboto', sans-serif;
 }
 .connection-header {
   display: flex;
@@ -102,13 +102,13 @@ onMounted(checkAll)
 .eyebrow {
   margin: 0 0 10px;
   color: #b04a32;
-  font: 700 12px/1.2 Arial, sans-serif;
+  font: 700 12px/1.2 'Roboto', sans-serif;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 h1, h2, p { margin-top: 0; }
 h1 { margin-bottom: 10px; font-size: clamp(32px, 6vw, 52px); font-weight: 500; }
-.description { margin-bottom: 0; color: #557078; font: 15px/1.5 Arial, sans-serif; }
+.description { margin-bottom: 0; color: #557078; font: 15px/1.5 'Roboto', sans-serif; }
 .check-button {
   border: 0;
   border-radius: 4px;
@@ -116,7 +116,7 @@ h1 { margin-bottom: 10px; font-size: clamp(32px, 6vw, 52px); font-weight: 500; }
   background: #d96b45;
   color: #fffaf3;
   cursor: pointer;
-  font: 700 13px Arial, sans-serif;
+  font: 700 13px 'Roboto', sans-serif;
   white-space: nowrap;
 }
 .check-button:disabled { cursor: wait; opacity: 0.65; }
@@ -134,9 +134,9 @@ h1 { margin-bottom: 10px; font-size: clamp(32px, 6vw, 52px); font-weight: 500; }
 .status-dot.success { background: #2b8a6e; }
 .status-dot.error { background: #b83b3b; }
 h2 { margin-bottom: 5px; font-size: 19px; font-weight: 600; }
-.check-details p, .check-result span, .last-checked { margin-bottom: 0; color: #668087; font: 12px/1.4 Arial, sans-serif; }
+.check-details p, .check-result span, .last-checked { margin-bottom: 0; color: #668087; font: 12px/1.4 'Roboto', sans-serif; }
 .check-result { text-align: right; }
-.check-result strong { display: block; margin-bottom: 4px; font: 700 12px Arial, sans-serif; }
+.check-result strong { display: block; margin-bottom: 4px; font: 700 12px 'Roboto', sans-serif; }
 .check-result.success strong { color: #2b8a6e; }
 .check-result.error strong { color: #b83b3b; }
 .last-checked { margin-top: 20px; }
