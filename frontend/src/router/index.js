@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '../auth/Login.vue'
 import AdminDashboard from '../admin/AdminDashboard.vue'
 import Academic from '../admin/Academic.vue'
+import UserAccount from '../admin/UserAccount.vue'
 import FacultyDashboard from '../faculty/FacultyDashboard.vue'
 import StudentDashboard from '../student/StudentDashboard.vue'
 
@@ -28,6 +29,7 @@ const router = createRouter({
     { path: '/login', component: Login },
     { path: '/admin', component: AdminDashboard, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/admin/academic', component: Academic, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
+    { path: '/admin/accounts', component: UserAccount, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/faculty', component: FacultyDashboard, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/student', component: StudentDashboard, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
   ],

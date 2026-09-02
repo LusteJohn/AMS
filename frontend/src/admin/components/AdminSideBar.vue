@@ -4,6 +4,7 @@
     <nav>
       <RouterLink to="/admin">Dashboard</RouterLink>
       <RouterLink to="/admin/academic">Academic</RouterLink>
+      <RouterLink to="/admin/accounts">User accounts</RouterLink>
     </nav>
   </aside>
 </template>
