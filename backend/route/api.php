@@ -12,6 +12,9 @@ use App\Core\Router;
 use App\Core\Database;
 use App\Core\Csrf;
 use App\Controller\UserController;
+use App\Controller\CollegeController;
+use App\Controller\ProgramController;
+use App\Controller\SectionController;
 use App\Middleware\AdminMiddleware;
 
 $router = new Router();
@@ -63,6 +66,26 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->post('/users', [UserController::class, 'store']);
     $router->put('/users/{id}', [UserController::class, 'update']);
     $router->delete('/users/{id}', [UserController::class, 'destroy']);
+}, [AdminMiddleware::class . '::requireAdmin']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/colleges', [CollegeController::class, 'index']);
+    $router->get('/colleges/{id}', [CollegeController::class, 'show']);
+    $router->post('/colleges', [CollegeController::class, 'store']);
+    $router->put('/colleges/{id}', [CollegeController::class, 'update']);
+    $router->delete('/colleges/{id}', [CollegeController::class, 'delete']);
+
+    $router->get('/programs', [ProgramController::class, 'index']);
+    $router->get('/programs/{id}', [ProgramController::class, 'show']);
+    $router->post('/programs', [ProgramController::class, 'store']);
+    $router->put('/programs/{id}', [ProgramController::class, 'update']);
+    $router->delete('/programs/{id}', [ProgramController::class, 'delete']);
+
+    $router->get('/sections', [SectionController::class, 'index']);
+    $router->get('/sections/{id}', [SectionController::class, 'show']);
+    $router->post('/sections', [SectionController::class, 'store']);
+    $router->put('/sections/{id}', [SectionController::class, 'update']);
+    $router->delete('/sections/{id}', [SectionController::class, 'delete']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->post('/api/auth/register', [UserController::class, 'register']);
