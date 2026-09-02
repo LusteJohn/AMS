@@ -1,0 +1,11 @@
+{
+    "name": "attendancesystem/backend",
+    "autoload": {
+        "psr-4": {
+            "Attendancesystem\\Backend\\": "src/"
+        }
+    },
+    "require": {
+        "vlucas/phpdotenv": "^5.7"
+    }
+}
