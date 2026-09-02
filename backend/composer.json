@@ -2,7 +2,7 @@
     "name": "attendancesystem/backend",
     "autoload": {
         "psr-4": {
-            "Attendancesystem\\Backend\\": "src/"
+            "App\\": "app/"
         }
     },
     "require": {
