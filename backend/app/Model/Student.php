@@ -91,7 +91,7 @@ class Student extends Model
         if ($data['school_id'] === null) {
             $statement->bindValue(':school_id', null, PDO::PARAM_NULL);
         } else {
-            $statement->bindValue(':school_id', (int) $data['school_id'], PDO::PARAM_INT);
+            $statement->bindValue(':school_id', $data['school_id'], PDO::PARAM_STR);
         }
         $statement->bindValue(':firstname', $data['firstname'], PDO::PARAM_STR);
         $statement->bindValue(':middlename', $data['middlename'] ?: null, $data['middlename'] ? PDO::PARAM_STR : PDO::PARAM_NULL);

@@ -1,7 +1,15 @@
 <script setup>
 import Dashboard from '../components/Dashboard.vue'
+import StudentSideBar from './components/StudentSideBar.vue'
 </script>
 
 <template>
-  <Dashboard title="Student Dashboard" />
+  <div class="student-layout">
+    <StudentSideBar />
+    <Dashboard title="Student Dashboard" />
+  </div>
 </template>
+
+<style scoped>
+.student-layout { display: flex; min-height: 100vh; }
+</style>
