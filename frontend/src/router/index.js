@@ -6,6 +6,7 @@ import Academic from '../admin/Academic.vue'
 import UserAccount from '../admin/UserAccount.vue'
 import FacultyDashboard from '../faculty/FacultyDashboard.vue'
 import StudentDashboard from '../student/StudentDashboard.vue'
+import StudentProfile from '../student/StudentProfile.vue'
 
 function storedUser() {
   try {
@@ -32,6 +33,7 @@ const router = createRouter({
     { path: '/admin/accounts', component: UserAccount, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/faculty', component: FacultyDashboard, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/student', component: StudentDashboard, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
+    { path: '/student/profile', component: StudentProfile, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
   ],
 })
 

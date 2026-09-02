@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS student (
     student_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     section_id INT NOT NULL,
-    school_id INT DEFAULT NULL,
+    school_id VARCHAR(10) DEFAULT NULL,
     firstname VARCHAR(50) NOT NULL,
     middlename VARCHAR(50) DEFAULT NULL,
     lastname VARCHAR(50) NOT NULL,

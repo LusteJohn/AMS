@@ -72,6 +72,7 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/student/profile', [StudentController::class, 'profile']);
+    $router->get('/student/sections', [SectionController::class, 'index']);
     $router->post('/student/profile', [StudentController::class, 'storeProfile']);
     $router->put('/student/profile', [StudentController::class, 'updateProfile']);
     $router->delete('/student/profile', [StudentController::class, 'destroyProfile']);

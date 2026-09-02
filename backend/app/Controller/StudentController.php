@@ -93,7 +93,7 @@ class StudentController extends Controller
     {
         $data = [
             'section_id' => filter_var($this->input('section_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]),
-            'school_id' => $this->nullablePositiveInt($this->input('school_id')),
+            'school_id' => $this->nullableSchoolId($this->input('school_id')),
             'firstname' => $this->textInput('firstname'),
             'middlename' => $this->textInput('middlename'),
             'lastname' => $this->textInput('lastname'),
@@ -104,7 +104,7 @@ class StudentController extends Controller
         $errors = [];
 
         foreach (['firstname' => 50, 'middlename' => 50, 'lastname' => 50, 'name_ext' => 5, 'gender' => 20, 'address' => 255] as $field => $maxLength) {
-            if ($field !== 'middlename' && $data[$field] === '') {
+            if (!in_array($field, ['middlename', 'name_ext'], true) && $data[$field] === '') {
                 $errors[$field] = ucfirst($field) . ' is required.';
             } elseif (strlen($data[$field]) > $maxLength) {
                 $errors[$field] = ucfirst($field) . " must not exceed {$maxLength} characters.";
@@ -112,6 +112,9 @@ class StudentController extends Controller
         }
         if (!$data['section_id']) {
             $errors['section_id'] = 'A valid section is required.';
+        }
+        if ($data['school_id'] !== null && strlen($data['school_id']) > 10) {
+            $errors['school_id'] = 'School ID must not exceed 10 characters.';
         }
         if ($errors) {
             $this->response->error('Validation failed', $errors, 422);
@@ -125,13 +128,16 @@ class StudentController extends Controller
         return trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? '');
     }
 
-    private function nullablePositiveInt(mixed $value): ?int
+    private function nullableSchoolId(mixed $value): ?string
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        $number = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-        return $number === false ? null : (int) $number;
+        $schoolId = $this->textInputValue($value);
+        return $schoolId === '' ? null : $schoolId;
+    }
+
+    private function textInputValue(mixed $value): string
+    {
+        $value = strip_tags((string) $value);
+        return trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? '');
     }
 
     private function requireCsrf(): void
