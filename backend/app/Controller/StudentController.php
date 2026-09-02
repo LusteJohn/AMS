@@ -5,16 +5,19 @@ namespace App\Controller;
 use App\Core\Controller;
 use App\Core\Csrf;
 use App\Model\Student;
+use App\Model\User;
 use PDOException;
 
 class StudentController extends Controller
 {
     private Student $students;
+    private User $users;
 
     public function __construct()
     {
         parent::__construct();
         $this->students = new Student();
+        $this->users = new User();
     }
 
     public function profile(): void
@@ -77,6 +80,31 @@ class StudentController extends Controller
         $this->json(['success' => true, 'data' => $this->students->all()]);
     }
 
+    public function adminStore(): void
+    {
+        $this->requireCsrf();
+        $account = $this->validatedAccount();
+        $profile = $this->validatedProfile();
+        $connection = $this->students->getConnection();
+
+        try {
+            $connection->beginTransaction();
+            $userId = $this->users->createUser($account['username'], $account['email'], $account['password'], 'student');
+            $this->students->createProfile($userId, $profile);
+            $connection->commit();
+        } catch (PDOException $exception) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+            if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
+                $this->response->error('Username or email is already registered', null, 409);
+            }
+            $this->response->serverError('Unable to register student account');
+        }
+
+        $this->response->created($this->students->findByUserId($userId), 'Student account registered successfully');
+    }
+
     private function authenticatedUserId(): int
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -120,6 +148,33 @@ class StudentController extends Controller
             $this->response->error('Validation failed', $errors, 422);
         }
         return $data;
+    }
+
+    private function validatedAccount(): array
+    {
+        $username = $this->textInput('username');
+        $email = filter_var(trim((string) $this->input('email', '')), FILTER_VALIDATE_EMAIL);
+        $password = (string) $this->input('password', '');
+        $errors = [];
+
+        if (!preg_match('/^[\p{L}\p{N} ._\'-]{2,100}$/u', $username)) {
+            $errors['username'] = 'Username must be 2 to 100 characters.';
+        }
+        if ($email === false) {
+            $errors['email'] = 'A valid email is required.';
+        }
+        if (strlen($password) < 8) {
+            $errors['password'] = 'Password must be at least 8 characters.';
+        }
+        if ($errors) {
+            $this->response->error('Validation failed', $errors, 422);
+        }
+
+        return [
+            'username' => $username,
+            'email' => strtolower((string) $email),
+            'password' => $password,
+        ];
     }
 
     private function textInput(string $key): string

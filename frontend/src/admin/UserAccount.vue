@@ -169,7 +169,6 @@ onMounted(loadUsers)
         <label>
           Role
           <select v-model="form.role" required>
-            <option value="student">Student</option>
             <option value="faculty">Faculty</option>
           </select>
         </label>

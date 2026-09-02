@@ -80,6 +80,7 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/students', [StudentController::class, 'index']);
+    $router->post('/students', [StudentController::class, 'adminStore']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
