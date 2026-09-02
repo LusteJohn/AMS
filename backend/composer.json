@@ -6,6 +6,8 @@
         }
     },
     "require": {
-        "vlucas/phpdotenv": "^5.7"
+        "vlucas/phpdotenv": "^5.7",
+        "phpoffice/phpspreadsheet": "^2.2",
+        "maennchen/zipstream-php": "^2.1"
     }
 }

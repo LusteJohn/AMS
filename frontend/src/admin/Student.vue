@@ -9,11 +9,15 @@ const sections = ref([])
 const isLoading = ref(false)
 const isSaving = ref(false)
 const isFormOpen = ref(false)
+const isManualFormOpen = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const csvFile = ref(null)
+const isCsvHelpOpen = ref(false)
 let messageTimer
 
-const form = ref({
+const sectionId = ref('')
+const manualForm = ref({
   username: '',
   email: '',
   password: '',
@@ -42,10 +46,9 @@ function apiError(error) {
 }
 
 function resetForm() {
-  form.value = {
-    username: '', email: '', password: '', section_id: '', school_id: '',
-    firstname: '', middlename: '', lastname: '', name_ext: '', gender: '', address: '',
-  }
+  csvFile.value = null
+  sectionId.value = ''
+  isCsvHelpOpen.value = false
 }
 
 function openForm() {
@@ -53,8 +56,24 @@ function openForm() {
   isFormOpen.value = true
 }
 
+function openManualForm() {
+  manualForm.value = {
+    username: '', email: '', password: '', section_id: '', school_id: '',
+    firstname: '', middlename: '', lastname: '', name_ext: '', gender: '', address: '',
+  }
+  isManualFormOpen.value = true
+}
+
+function selectCsv(event) {
+  csvFile.value = event.target.files?.[0] || null
+}
+
 function closeForm() {
   if (!isSaving.value) isFormOpen.value = false
+}
+
+function closeManualForm() {
+  if (!isSaving.value) isManualFormOpen.value = false
 }
 
 async function loadStudents() {
@@ -73,15 +92,32 @@ async function loadStudents() {
   }
 }
 
+async function importStudents() {
+  isSaving.value = true
+  try {
+    const payload = new FormData()
+    payload.append('csv_file', csvFile.value)
+    payload.append('section_id', sectionId.value)
+    await api.post('/api/students/import', payload)
+    isFormOpen.value = false
+    showMessage('success', 'Student account registered successfully.')
+    await loadStudents()
+  } catch (error) {
+    showMessage('error', apiError(error))
+  } finally {
+    isSaving.value = false
+  }
+}
+
 async function registerStudent() {
   isSaving.value = true
   try {
     await api.post('/api/students', {
-      ...form.value,
-      section_id: Number(form.value.section_id),
-      school_id: form.value.school_id || null,
+      ...manualForm.value,
+      section_id: Number(manualForm.value.section_id),
+      school_id: manualForm.value.school_id || null,
     })
-    isFormOpen.value = false
+    isManualFormOpen.value = false
     showMessage('success', 'Student account registered successfully.')
     await loadStudents()
   } catch (error) {
@@ -106,7 +142,8 @@ onMounted(loadStudents)
         </div>
         <div class="header-actions">
           <button type="button" :disabled="isLoading" @click="loadStudents">Refresh</button>
-          <button type="button" @click="openForm">Register student</button>
+          <button type="button" @click="openManualForm">Register one student</button>
+          <button type="button" @click="openForm">Import CSV</button>
         </div>
       </header>
 
@@ -135,33 +172,69 @@ onMounted(loadStudents)
     </main>
 
     <div v-if="isFormOpen" class="modal-backdrop" @click.self="closeForm">
-      <form class="modal" @submit.prevent="registerStudent">
-        <h2>Register student account</h2>
-        <label>Username<input v-model.trim="form.username" required maxlength="100" autocomplete="username" /></label>
-        <label>Email<input v-model.trim="form.email" type="email" required maxlength="100" autocomplete="email" /></label>
-        <label>Password<input v-model="form.password" type="password" required minlength="8" autocomplete="new-password" /></label>
+      <form class="modal" @submit.prevent="importStudents">
+        <div class="modal-title">
+          <h2>Import student accounts</h2>
+          <button type="button" class="help-button" :aria-expanded="isCsvHelpOpen" aria-label="CSV format help" @click="isCsvHelpOpen = !isCsvHelpOpen">?</button>
+        </div>
+        <div v-if="isCsvHelpOpen" class="csv-help">
+          <p>The CSV must include these column headers:</p>
+          <code>school_id,firstname,middlename,lastname,gender</code>
+          <p>Example:</p>
+          <pre>school_id,firstname,middlename,lastname,gender
+20260001,Juan,,Dela Cruz,male</pre>
+          <ul>
+            <li>Select the section separately from the dropdown.</li>
+            <li>Use a school ID with up to 10 characters.</li>
+            <li>The school ID becomes the username and initial password.</li>
+            <li>Leave middlename blank when it is not available.</li>
+          </ul>
+        </div>
+        <p class="modal-help">Required columns: school_id, firstname, middlename, lastname, gender.</p>
         <label>Section
-          <select v-model="form.section_id" required>
+          <select v-model="sectionId" required>
             <option disabled value="">Select section</option>
             <option v-for="section in sections" :key="section.section_id" :value="section.section_id">
               {{ section.college_name }} - {{ section.program_name }} - {{ section.section_name || section.section }}
             </option>
           </select>
         </label>
-        <label>School ID<input v-model.trim="form.school_id" maxlength="10" /></label>
-        <label>First name<input v-model.trim="form.firstname" required maxlength="50" /></label>
-        <label>Middle name<input v-model.trim="form.middlename" maxlength="50" /></label>
-        <label>Last name<input v-model.trim="form.lastname" required maxlength="50" /></label>
-        <label>Name extension<input v-model.trim="form.name_ext" maxlength="5" /></label>
+        <label>CSV file<input type="file" accept=".csv,text/csv" required @change="selectCsv" /></label>
+        <div class="modal-actions">
+          <button type="button" :disabled="isSaving" @click="closeForm">Cancel</button>
+          <button type="submit" :disabled="isSaving || !csvFile">{{ isSaving ? 'Importing...' : 'Import students' }}</button>
+        </div>
+      </form>
+    </div>
+
+    <div v-if="isManualFormOpen" class="modal-backdrop" @click.self="closeManualForm">
+      <form class="modal" @submit.prevent="registerStudent">
+        <h2>Register one student</h2>
+        <label>Username<input v-model.trim="manualForm.username" required maxlength="100" autocomplete="username" /></label>
+        <label>Email<input v-model.trim="manualForm.email" type="email" required maxlength="100" autocomplete="email" /></label>
+        <label>Password<input v-model="manualForm.password" type="password" required autocomplete="new-password" /></label>
+        <label>Section
+          <select v-model="manualForm.section_id" required>
+            <option disabled value="">Select section</option>
+            <option v-for="section in sections" :key="section.section_id" :value="section.section_id">
+              {{ section.college_name }} - {{ section.program_name }} - {{ section.section_name || section.section }}
+            </option>
+          </select>
+        </label>
+        <label>School ID<input v-model.trim="manualForm.school_id" maxlength="10" /></label>
+        <label>First name<input v-model.trim="manualForm.firstname" required maxlength="50" /></label>
+        <label>Middle name<input v-model.trim="manualForm.middlename" maxlength="50" /></label>
+        <label>Last name<input v-model.trim="manualForm.lastname" required maxlength="50" /></label>
+        <label>Name extension<input v-model.trim="manualForm.name_ext" maxlength="5" /></label>
         <label>Gender
-          <select v-model="form.gender" required>
+          <select v-model="manualForm.gender" required>
             <option disabled value="">Select gender</option>
             <option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
           </select>
         </label>
-        <label>Address<textarea v-model.trim="form.address" required maxlength="255" rows="3"></textarea></label>
+        <label>Address<textarea v-model.trim="manualForm.address" required maxlength="255" rows="3"></textarea></label>
         <div class="modal-actions">
-          <button type="button" :disabled="isSaving" @click="closeForm">Cancel</button>
+          <button type="button" :disabled="isSaving" @click="closeManualForm">Cancel</button>
           <button type="submit" :disabled="isSaving">{{ isSaving ? 'Registering...' : 'Register student' }}</button>
         </div>
       </form>
@@ -189,6 +262,13 @@ th { background: #edf3f0; }
 .success { border-color: #2b8a6e; background: #edf8f1; color: #21704f; }
 .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(25 49 58 / 35%); }
 .modal { width: min(520px, 100%); max-height: 90vh; overflow-y: auto; display: grid; gap: 14px; padding: 24px; background: #fffaf3; border: 1px solid #cbd8d5; border-radius: 6px; }
+.modal-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.help-button { width: 28px; height: 28px; padding: 0; border-radius: 50%; font-weight: 700; }
+.csv-help { padding: 12px; border: 1px solid #cbd8d5; background: #edf3f0; font: 13px/1.4 'Roboto', sans-serif; }
+.csv-help p { margin: 0 0 8px; }
+.csv-help code, .csv-help pre { display: block; overflow-x: auto; margin: 0 0 10px; font: 12px/1.5 monospace; }
+.csv-help ul { margin: 0; padding-left: 18px; }
+.modal-help { margin: 0; color: #5b747b; font: 13px/1.4 'Roboto', sans-serif; }
 .modal label { display: grid; gap: 6px; font: 700 13px 'Roboto', sans-serif; }
 input, select, textarea { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #aebfbc; border-radius: 3px; font: 14px 'Roboto', sans-serif; }
 .modal-actions { justify-content: end; }

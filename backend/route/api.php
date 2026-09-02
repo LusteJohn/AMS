@@ -81,6 +81,7 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/students', [StudentController::class, 'index']);
     $router->post('/students', [StudentController::class, 'adminStore']);
+    $router->post('/students/import', [StudentController::class, 'importCsv']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
