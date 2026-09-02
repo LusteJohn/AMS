@@ -15,7 +15,9 @@ use App\Controller\UserController;
 use App\Controller\CollegeController;
 use App\Controller\ProgramController;
 use App\Controller\SectionController;
+use App\Controller\StudentController;
 use App\Middleware\AdminMiddleware;
+use App\Middleware\StudentMiddleware;
 
 $router = new Router();
 
@@ -66,6 +68,17 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->post('/users', [UserController::class, 'store']);
     $router->put('/users/{id}', [UserController::class, 'update']);
     $router->delete('/users/{id}', [UserController::class, 'destroy']);
+}, [AdminMiddleware::class . '::requireAdmin']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/student/profile', [StudentController::class, 'profile']);
+    $router->post('/student/profile', [StudentController::class, 'storeProfile']);
+    $router->put('/student/profile', [StudentController::class, 'updateProfile']);
+    $router->delete('/student/profile', [StudentController::class, 'destroyProfile']);
+}, [StudentMiddleware::class . '::requireStudent']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/students', [StudentController::class, 'index']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
