@@ -7,6 +7,7 @@ use App\Core\Csrf;
 use App\Model\Student;
 use App\Model\User;
 use PDOException;
+use PhpOffice\PhpSpreadsheet\Reader\Csv;
 
 class StudentController extends Controller
 {
@@ -105,6 +106,111 @@ class StudentController extends Controller
         $this->response->created($this->students->findByUserId($userId), 'Student account registered successfully');
     }
 
+    public function importCsv(): void
+    {
+        $this->requireCsrf();
+        $sectionId = filter_var($_POST['section_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $file = $_FILES['csv_file'] ?? null;
+
+        if (!$sectionId || !$file || $file['error'] !== UPLOAD_ERR_OK) {
+            $this->response->badRequest('A valid CSV file and section are required');
+        }
+        if (strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) !== 'csv') {
+            $this->response->badRequest('Only CSV files are allowed');
+        }
+
+        try {
+            $reader = new Csv();
+            $reader->setReadDataOnly(true);
+            $sheet = $reader->load($file['tmp_name'])->getActiveSheet();
+            $rows = $sheet->toArray(null, true, true, false);
+        } catch (Throwable $exception) {
+            $this->response->badRequest('Unable to read the CSV file');
+        }
+
+        $headers = array_shift($rows);
+        $requiredHeaders = ['school_id', 'firstname', 'middlename', 'lastname', 'gender'];
+        $normalizedHeaders = array_map(static function ($header): string {
+            return strtolower(trim((string) preg_replace('/^\xEF\xBB\xBF/', '', $header)));
+        }, $headers ?: []);
+        if (array_diff($requiredHeaders, $normalizedHeaders)) {
+            $this->response->error('CSV must contain school_id, firstname, middlename, lastname, and gender columns', null, 422);
+        }
+
+        $columnMap = array_flip($normalizedHeaders);
+        $records = [];
+        $rowNumber = 1;
+        foreach ($rows as $row) {
+            $rowNumber++;
+            if (count(array_filter($row, static fn ($value): bool => trim((string) $value) !== '')) === 0) {
+                continue;
+            }
+
+            $record = [];
+            foreach ($requiredHeaders as $header) {
+                $record[$header] = $this->csvText($row[$columnMap[$header]] ?? '');
+            }
+            $records[] = ['row' => $rowNumber, 'data' => $record];
+        }
+
+        if (!$records) {
+            $this->response->error('The CSV file contains no student records', null, 422);
+        }
+
+        $errors = [];
+        foreach ($records as $record) {
+            $data = $record['data'];
+            if ($data['school_id'] === '' || strlen($data['school_id']) > 10) {
+                $errors[] = "Row {$record['row']}: school_id is required and must not exceed 10 characters.";
+            }
+            foreach (['firstname' => 50, 'middlename' => 50, 'lastname' => 50, 'gender' => 20] as $field => $maxLength) {
+                if ($field !== 'middlename' && $data[$field] === '') {
+                    $errors[] = "Row {$record['row']}: {$field} is required.";
+                } elseif (strlen($data[$field]) > $maxLength) {
+                    $errors[] = "Row {$record['row']}: {$field} exceeds {$maxLength} characters.";
+                }
+            }
+        }
+        if ($errors) {
+            $this->response->error('CSV validation failed', $errors, 422);
+        }
+
+        $connection = $this->students->getConnection();
+        try {
+            $connection->beginTransaction();
+            foreach ($records as $record) {
+                $data = $record['data'];
+                $userId = $this->users->createUser(
+                    $data['school_id'],
+                    $data['school_id'] . '@student.local',
+                    $data['school_id'],
+                    'student'
+                );
+                $this->students->createProfile($userId, [
+                    'section_id' => $sectionId,
+                    'school_id' => $data['school_id'],
+                    'firstname' => $data['firstname'],
+                    'middlename' => $data['middlename'],
+                    'lastname' => $data['lastname'],
+                    'name_ext' => '',
+                    'gender' => $data['gender'],
+                    'address' => '',
+                ]);
+            }
+            $connection->commit();
+        } catch (PDOException $exception) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+            if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
+                $this->response->error('A school_id in the CSV is already registered', null, 409);
+            }
+            $this->response->serverError('Unable to import student accounts');
+        }
+
+        $this->response->created(['imported' => count($records)], 'Student CSV imported successfully');
+    }
+
     private function authenticatedUserId(): int
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -163,8 +269,8 @@ class StudentController extends Controller
         if ($email === false) {
             $errors['email'] = 'A valid email is required.';
         }
-        if (strlen($password) < 8) {
-            $errors['password'] = 'Password must be at least 8 characters.';
+        if ($password === '') {
+            $errors['password'] = 'Password is required.';
         }
         if ($errors) {
             $this->response->error('Validation failed', $errors, 422);
@@ -180,6 +286,12 @@ class StudentController extends Controller
     private function textInput(string $key): string
     {
         $value = strip_tags((string) $this->input($key, ''));
+        return trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? '');
+    }
+
+    private function csvText(mixed $value): string
+    {
+        $value = strip_tags((string) $value);
         return trim(preg_replace('/[\x00-\x1F\x7F]/u', '', $value) ?? '');
     }
 
