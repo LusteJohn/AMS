@@ -10,6 +10,9 @@ if (!class_exists('\App\\Core\\Router')) {
 
 use App\Core\Router;
 use App\Core\Database;
+use App\Core\Csrf;
+use App\Controller\UserController;
+use App\Middleware\AdminMiddleware;
 
 $router = new Router();
 
@@ -48,5 +51,23 @@ $router->get('/api/health', function () {
         ], JSON_UNESCAPED_UNICODE);
     }
 });
+
+$router->get('/api/csrf-token', function () {
+    $response = new \App\Core\Response();
+    $response->success(['csrf_token' => Csrf::token()]);
+});
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/users', [UserController::class, 'index']);
+    $router->get('/users/{id}', [UserController::class, 'show']);
+    $router->post('/users', [UserController::class, 'store']);
+    $router->put('/users/{id}', [UserController::class, 'update']);
+    $router->delete('/users/{id}', [UserController::class, 'destroy']);
+}, [AdminMiddleware::class . '::requireAdmin']);
+
+$router->post('/api/auth/register', [UserController::class, 'register']);
+$router->post('/api/auth/login', [UserController::class, 'login']);
+$router->post('/api/auth/logout', [UserController::class, 'logout']);
+$router->get('/api/auth/session', [UserController::class, 'session']);
 
 return $router;
