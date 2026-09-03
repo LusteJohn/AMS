@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS attendance (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_attendance_requirement
-        FOREIGN KEY (student_company_id) REFERENCES ojt_requirement (student_company_id)
+        FOREIGN KEY (student_company_id) REFERENCES ojt_student_company (student_company_id)
         ON UPDATE CASCADE ON DELETE CASCADE,
     UNIQUE KEY attendance_date_unique (student_company_id, attendance_date),
     INDEX idx_attendance_student_company_id (student_company_id)
