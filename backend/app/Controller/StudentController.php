@@ -8,6 +8,7 @@ use App\Model\Student;
 use App\Model\User;
 use PDOException;
 use PhpOffice\PhpSpreadsheet\Reader\Csv;
+use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
 
 class StudentController extends Controller
 {
@@ -115,12 +116,13 @@ class StudentController extends Controller
         if (!$sectionId || !$file || $file['error'] !== UPLOAD_ERR_OK) {
             $this->response->badRequest('A valid CSV file and section are required');
         }
-        if (strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) !== 'csv') {
-            $this->response->badRequest('Only CSV files are allowed');
+        $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($extension, ['csv', 'xlsx'], true)) {
+            $this->response->badRequest('Only CSV and XLSX files are allowed');
         }
 
         try {
-            $reader = new Csv();
+            $reader = $extension === 'xlsx' ? new Xlsx() : new Csv();
             $reader->setReadDataOnly(true);
             $sheet = $reader->load($file['tmp_name'])->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, false);

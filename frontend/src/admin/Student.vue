@@ -178,7 +178,7 @@ onMounted(loadStudents)
           <button type="button" class="help-button" :aria-expanded="isCsvHelpOpen" aria-label="CSV format help" @click="isCsvHelpOpen = !isCsvHelpOpen">?</button>
         </div>
         <div v-if="isCsvHelpOpen" class="csv-help">
-          <p>The CSV must include these column headers:</p>
+          <p>The CSV or XLSX file must include these column headers:</p>
           <code>school_id,firstname,middlename,lastname,gender</code>
           <p>Example:</p>
           <pre>school_id,firstname,middlename,lastname,gender
@@ -199,7 +199,7 @@ onMounted(loadStudents)
             </option>
           </select>
         </label>
-        <label>CSV file<input type="file" accept=".csv,text/csv" required @change="selectCsv" /></label>
+        <label>CSV or XLSX file<input type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required @change="selectCsv" /></label>
         <div class="modal-actions">
           <button type="button" :disabled="isSaving" @click="closeForm">Cancel</button>
           <button type="submit" :disabled="isSaving || !csvFile">{{ isSaving ? 'Importing...' : 'Import students' }}</button>
