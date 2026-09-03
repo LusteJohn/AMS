@@ -8,6 +8,9 @@ const assignments = ref([])
 const attendance = ref([])
 const attendanceForm = ref(null)
 const logForm = ref(null)
+const expandedAttendanceId = ref(null)
+const attendanceDetails = ref({})
+const isDetailsLoading = ref(false)
 const isLoading = ref(false)
 const isSaving = ref(false)
 const isCameraLoading = ref(false)
@@ -94,6 +97,39 @@ async function loadData() {
 	} finally {
 		isLoading.value = false
 	}
+}
+
+async function toggleAttendanceDetails(item) {
+	if (expandedAttendanceId.value === item.attendance_id) {
+		expandedAttendanceId.value = null
+		return
+	}
+
+	expandedAttendanceId.value = item.attendance_id
+	if (attendanceDetails.value[item.attendance_id]) return
+
+	isDetailsLoading.value = true
+	try {
+		const response = await api.get('/api/attendance-logs', { params: { attendance_id: item.attendance_id } })
+		const logs = Array.isArray(response.data?.data) ? response.data.data : []
+		const evidenceResponses = await Promise.all(logs.map((log) => api.get('/api/attendance-evidence', { params: { attendance_log_id: log.attendance_log_id } })))
+		const evidence = evidenceResponses.flatMap((evidenceResponse) => Array.isArray(evidenceResponse.data?.data) ? evidenceResponse.data.data : [])
+		attendanceDetails.value[item.attendance_id] = { logs, evidence }
+	} catch (error) {
+		showMessage('error', apiError(error))
+		expandedAttendanceId.value = null
+	} finally {
+		isDetailsLoading.value = false
+	}
+}
+
+function evidenceForLog(logId) {
+		if (!expandedAttendanceId.value) return null
+		return attendanceDetails.value[expandedAttendanceId.value]?.evidence.find((item) => item.attendance_log_id === logId) || null
+}
+
+function evidenceUrl(path) {
+	return `${api.defaults.baseURL.replace(/\/$/, '')}/${path}`
 }
 
 async function saveAttendance() {
@@ -226,10 +262,22 @@ onBeforeUnmount(() => {
 				<table>
 					<thead><tr><th>Date</th><th>Company</th><th>Total hours</th><th>Status</th><th>Actions</th></tr></thead>
 					<tbody>
-						<tr v-for="item in attendance" :key="item.attendance_id">
-							<td>{{ item.attendance_date }}</td><td>{{ item.company_name }}</td><td>{{ item.total_hours }}</td><td>{{ item.status }}</td>
-							<td class="row-actions"><button type="button" @click="openAttendanceEdit(item)">Edit</button><button type="button" @click="deleteAttendance(item)">Delete</button><button type="button" @click="openLogForm(item)">Add log + selfie</button></td>
-						</tr>
+						<template v-for="item in attendance" :key="item.attendance_id">
+							<tr>
+								<td>{{ item.attendance_date }}</td><td>{{ item.company_name }}</td><td>{{ item.total_hours }}</td><td>{{ item.status }}</td>
+								<td class="row-actions"><button type="button" class="expand-button" :aria-expanded="expandedAttendanceId === item.attendance_id" :aria-label="expandedAttendanceId === item.attendance_id ? 'Hide attendance details' : 'Show attendance details'" @click="toggleAttendanceDetails(item)"><span class="arrow" :class="{ 'arrow-up': expandedAttendanceId === item.attendance_id }" aria-hidden="true"></span></button><button type="button" @click="openAttendanceEdit(item)">Edit</button><button type="button" @click="deleteAttendance(item)">Delete</button><button type="button" @click="openLogForm(item)">Add log + selfie</button></td>
+							</tr>
+							<tr v-if="expandedAttendanceId === item.attendance_id" class="details-row">
+								<td colspan="5">
+									<p v-if="isDetailsLoading">Loading attendance logs and evidence...</p>
+									<div v-else-if="attendanceDetails[item.attendance_id]?.logs.length" class="details-content">
+										<h3>Attendance logs and evidence</h3>
+										<table class="nested-table"><thead><tr><th>Type</th><th>Time</th><th>Evidence</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td><a v-if="evidenceForLog(log.attendance_log_id)" :href="evidenceUrl(evidenceForLog(log.attendance_log_id).image_path)" target="_blank" rel="noopener">View selfie</a><span v-else>No selfie</span></td></tr></tbody></table>
+									</div>
+									<p v-else>No attendance logs or evidence found.</p>
+								</td>
+							</tr>
+						</template>
 						<tr v-if="!attendance.length"><td colspan="5">No attendance records found.</td></tr>
 					</tbody>
 				</table>
@@ -247,6 +295,9 @@ onBeforeUnmount(() => {
 .attendance-page { flex: 1; max-width: 1200px; padding: 40px; }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
 .header-actions, .modal-actions, .row-actions, .camera-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.expand-button { min-width: 34px; padding: 8px 10px; }
+.arrow { display: inline-block; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s ease; }
+.arrow-up { transform: rotate(225deg) translate(-1px, -1px); }
 .eyebrow { margin: 0 0 8px; color: #b04a32; font: 700 12px 'Roboto', sans-serif; text-transform: uppercase; letter-spacing: .08em; }
 h1, h2 { margin: 0; }
 .page-header p:last-child, .context { color: #5b747b; }
@@ -257,6 +308,9 @@ button:disabled { cursor: wait; opacity: .6; }
 table { width: 100%; border-collapse: collapse; font: 14px 'Roboto', sans-serif; }
 th, td { padding: 12px 10px; border-bottom: 1px solid #dce6e3; text-align: left; vertical-align: top; }
 th { background: #edf3f0; }
+.details-row > td { padding: 18px; background: #f7faf8; }
+.details-content h3 { margin: 0 0 12px; font-size: 16px; }
+.nested-table { background: #fffaf3; }
 .message-container { position: fixed; top: 24px; right: 24px; z-index: 20; width: min(360px, calc(100vw - 48px)); }
 .message { margin: 0; padding: 14px 16px; border-left: 4px solid; border-radius: 4px; box-shadow: 0 8px 24px rgb(25 49 58 / 14%); font: 14px/1.4 'Roboto', sans-serif; }
 .error, .camera-error { border-color: #b83b3b; background: #fff0ed; color: #a33b2e; }
