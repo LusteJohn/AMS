@@ -7,6 +7,7 @@
       <RouterLink to="/admin/accounts">User accounts</RouterLink>
       <RouterLink to="/admin/students">Students</RouterLink>
       <RouterLink to="/admin/faculty">Faculty</RouterLink>
+      <RouterLink to="/admin/ojt-companies">OJT companies</RouterLink>
     </nav>
   </aside>
 </template>
