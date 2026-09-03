@@ -16,6 +16,7 @@ use App\Controller\CollegeController;
 use App\Controller\ProgramController;
 use App\Controller\SectionController;
 use App\Controller\StudentController;
+use App\Controller\FacultyController;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\StudentMiddleware;
 
@@ -82,6 +83,14 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/students', [StudentController::class, 'index']);
     $router->post('/students', [StudentController::class, 'adminStore']);
     $router->post('/students/import', [StudentController::class, 'importCsv']);
+}, [AdminMiddleware::class . '::requireAdmin']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/faculty', [FacultyController::class, 'index']);
+    $router->get('/faculty/{id}', [FacultyController::class, 'show']);
+    $router->post('/faculty', [FacultyController::class, 'store']);
+    $router->put('/faculty/{id}', [FacultyController::class, 'update']);
+    $router->delete('/faculty/{id}', [FacultyController::class, 'destroy']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
