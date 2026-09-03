@@ -20,6 +20,7 @@ use App\Controller\FacultyController;
 use App\Controller\OjtCompanyController;
 use App\Controller\CompanySupervisorController;
 use App\Controller\OjtStudentCompanyController;
+use App\Controller\AttendanceController;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\StudentMiddleware;
 
@@ -124,6 +125,14 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->post('/ojt-student-companies', [OjtStudentCompanyController::class, 'store']);
     $router->put('/ojt-student-companies/{id}', [OjtStudentCompanyController::class, 'update']);
     $router->delete('/ojt-student-companies/{id}', [OjtStudentCompanyController::class, 'destroy']);
+}, [$canManageCompanies]);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/attendance', [AttendanceController::class, 'index']);
+    $router->get('/attendance/{id}', [AttendanceController::class, 'show']);
+    $router->post('/attendance', [AttendanceController::class, 'store']);
+    $router->put('/attendance/{id}', [AttendanceController::class, 'update']);
+    $router->delete('/attendance/{id}', [AttendanceController::class, 'destroy']);
 }, [$canManageCompanies]);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
