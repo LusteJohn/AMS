@@ -17,6 +17,7 @@ use App\Controller\ProgramController;
 use App\Controller\SectionController;
 use App\Controller\StudentController;
 use App\Controller\FacultyController;
+use App\Controller\OjtCompanyController;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\StudentMiddleware;
 
@@ -91,6 +92,14 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->post('/faculty', [FacultyController::class, 'store']);
     $router->put('/faculty/{id}', [FacultyController::class, 'update']);
     $router->delete('/faculty/{id}', [FacultyController::class, 'destroy']);
+}, [AdminMiddleware::class . '::requireAdmin']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/companies', [OjtCompanyController::class, 'index']);
+    $router->get('/companies/{id}', [OjtCompanyController::class, 'show']);
+    $router->post('/companies', [OjtCompanyController::class, 'store']);
+    $router->put('/companies/{id}', [OjtCompanyController::class, 'update']);
+    $router->delete('/companies/{id}', [OjtCompanyController::class, 'destroy']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
