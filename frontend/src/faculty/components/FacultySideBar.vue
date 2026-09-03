@@ -3,6 +3,7 @@
     <h2>Faculty</h2>
     <nav>
       <RouterLink to="/faculty">Dashboard</RouterLink>
+      <RouterLink to="/faculty/ojt-company">OJT companies</RouterLink>
     </nav>
   </aside>
 </template>
