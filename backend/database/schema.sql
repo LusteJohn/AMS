@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS company_supervisors (
     INDEX idx_company_supervisor_company_id (company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS ojt_requirement (
+CREATE TABLE IF NOT EXISTS ojt_student_company (
     student_company_id INT AUTO_INCREMENT PRIMARY KEY,
     company_id INT NOT NULL,
     student_id INT NOT NULL,

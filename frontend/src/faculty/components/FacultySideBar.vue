@@ -4,6 +4,7 @@
     <nav>
       <RouterLink to="/faculty">Dashboard</RouterLink>
       <RouterLink to="/faculty/ojt-company">OJT companies</RouterLink>
+      <RouterLink to="/faculty/company-supervisors">Company supervisors</RouterLink>
     </nav>
   </aside>
 </template>
