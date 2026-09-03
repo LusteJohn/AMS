@@ -12,6 +12,9 @@ import StudentDashboard from '../student/StudentDashboard.vue'
 import StudentProfile from '../student/StudentProfile.vue'
 import StudentOjtCompany from '../student/StudentOjtCompany.vue'
 import FacultyOjtCompany from '../faculty/FacultyOjtCompany.vue'
+import AdminCompanySupervisor from '../admin/AdminCompanySupervisor.vue'
+import FacultyCompanySupervisor from '../faculty/FacultyCompanySupervisor.vue'
+import StudentCompanySupervisor from '../student/StudentCompanySupervisor.vue'
 
 function storedUser() {
   try {
@@ -39,11 +42,14 @@ const router = createRouter({
     { path: '/admin/students', component: Student, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/admin/faculty', component: Faculty, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/admin/ojt-companies', component: AdminOjtCompany, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
+    { path: '/admin/company-supervisors', component: AdminCompanySupervisor, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/faculty', component: FacultyDashboard, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/faculty/ojt-company', component: FacultyOjtCompany, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
+    { path: '/faculty/company-supervisors', component: FacultyCompanySupervisor, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/student', component: StudentDashboard, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/profile', component: StudentProfile, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/ojt-company', component: StudentOjtCompany, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
+    { path: '/student/company-supervisors', component: StudentCompanySupervisor, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
   ],
 })
 
