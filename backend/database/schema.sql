@@ -154,6 +154,38 @@ CREATE TABLE IF NOT EXISTS attendance (
     INDEX idx_attendance_student_company_id (student_company_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS attendance_evidence (
+    attendance_evidence_id INT AUTO_INCREMENT PRIMARY KEY,
+    attendance_id INT NOT NULL,
+
+    evidence_type ENUM('time_in', 'time_out') NOT NULL,
+
+    image_path VARCHAR(500) NOT NULL,
+
+    captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_attendance_evidence_attendance
+        FOREIGN KEY (attendance_id)
+        REFERENCES attendance(attendance_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    UNIQUE KEY attendance_evidence_type_unique (
+        attendance_id,
+        evidence_type
+    ),
+
+    INDEX idx_attendance_evidence_attendance_id (
+        attendance_id
+    )
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS attendance_corrections (
     correction_id INT AUTO_INCREMENT PRIMARY KEY,
     attendance_id INT NOT NULL,
