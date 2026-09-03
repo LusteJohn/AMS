@@ -5,6 +5,7 @@
       <RouterLink to="/student">Dashboard</RouterLink>
       <RouterLink to="/student/profile">Profile</RouterLink>
       <RouterLink to="/student/ojt-company">OJT company</RouterLink>
+      <RouterLink to="/student/selected-ojt-company">Selected OJT company</RouterLink>
       <RouterLink to="/student/company-supervisors">Company supervisors</RouterLink>
     </nav>
   </aside>
