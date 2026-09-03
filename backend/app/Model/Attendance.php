@@ -12,7 +12,7 @@ class Attendance extends Model
 	public function all(?int $studentId = null): array
 	{
 		$sql = 'SELECT a.attendance_id, a.student_company_id,
-					   a.attendance_date, a.time_in, a.time_out,
+					   a.attendance_date,
 					   a.total_hours, a.status, a.created_at, a.updated_at,
 					   osc.student_id, osc.company_id, c.company_name,
 					   s.school_id, s.firstname, s.middlename, s.lastname
@@ -34,7 +34,7 @@ class Attendance extends Model
 	{
 		return $this->fetch(
 			'SELECT a.attendance_id, a.student_company_id,
-					a.attendance_date, a.time_in, a.time_out,
+					a.attendance_date,
 					a.total_hours, a.status, a.created_at, a.updated_at,
 					osc.student_id, osc.company_id, c.company_name,
 					s.school_id, s.firstname, s.middlename, s.lastname
@@ -62,9 +62,9 @@ class Attendance extends Model
 	{
 		$statement = $this->db->prepare(
 			'INSERT INTO attendance
-				(student_company_id, attendance_date, time_in, time_out, total_hours, status)
+				(student_company_id, attendance_date, total_hours, status)
 			 VALUES
-				(:student_company_id, :attendance_date, :time_in, :time_out, :total_hours, :status)'
+				(:student_company_id, :attendance_date, :total_hours, :status)'
 		);
 		$this->bindAttendance($statement, $data);
 		$statement->execute();
@@ -75,8 +75,8 @@ class Attendance extends Model
 	{
 		$statement = $this->db->prepare(
 			'UPDATE attendance SET student_company_id = :student_company_id,
-				attendance_date = :attendance_date, time_in = :time_in,
-				time_out = :time_out, total_hours = :total_hours, status = :status
+				attendance_date = :attendance_date, total_hours = :total_hours,
+				status = :status
 			 WHERE attendance_id = :attendance_id'
 		);
 		$this->bindAttendance($statement, $data);
@@ -97,8 +97,6 @@ class Attendance extends Model
 	{
 		$statement->bindValue(':student_company_id', $data['student_company_id'], PDO::PARAM_INT);
 		$statement->bindValue(':attendance_date', $data['attendance_date'], PDO::PARAM_STR);
-		$statement->bindValue(':time_in', $data['time_in'] ?: null, $data['time_in'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
-		$statement->bindValue(':time_out', $data['time_out'] ?: null, $data['time_out'] ? PDO::PARAM_STR : PDO::PARAM_NULL);
 		$statement->bindValue(':total_hours', $data['total_hours'], PDO::PARAM_STR);
 		$statement->bindValue(':status', $data['status'], PDO::PARAM_STR);
 	}

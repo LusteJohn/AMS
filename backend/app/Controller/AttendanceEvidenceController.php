@@ -22,13 +22,13 @@ class AttendanceEvidenceController extends Controller
 
 	public function index(): void
 	{
-		$attendanceId = $this->query('attendance_id');
-		$attendanceId = $attendanceId === null || $attendanceId === '' ? null : $this->positiveId((string) $attendanceId, 'attendance');
+		$attendanceLogId = $this->query('attendance_log_id');
+		$attendanceLogId = $attendanceLogId === null || $attendanceLogId === '' ? null : $this->positiveId((string) $attendanceLogId, 'attendance log');
 		$studentId = $this->studentScope();
-		if ($studentId !== null && $attendanceId !== null) {
-			$this->authorizeAttendance($attendanceId, $studentId);
+		if ($studentId !== null && $attendanceLogId !== null) {
+			$this->authorizeLog($attendanceLogId, $studentId);
 		}
-		$this->json(['success' => true, 'data' => $this->evidence->all($studentId, $attendanceId)]);
+		$this->json(['success' => true, 'data' => $this->evidence->all($studentId, $attendanceLogId)]);
 	}
 
 	public function show(string $id): void
@@ -44,8 +44,8 @@ class AttendanceEvidenceController extends Controller
 		$this->requireCsrf();
 		$studentId = $this->studentScope();
 		$data = $this->validatedEvidence();
-		$this->authorizeAttendance($data['attendance_id'], $studentId);
-		$imagePath = $this->storeImage($data['evidence_type']);
+		$this->authorizeLog($data['attendance_log_id'], $studentId);
+		$imagePath = $this->storeImage();
 		$data['image_path'] = $imagePath;
 		try {
 			$evidenceId = $this->evidence->createEvidence($data);
@@ -66,8 +66,8 @@ class AttendanceEvidenceController extends Controller
 		$current = $this->evidence->find($evidenceId);
 		$this->authorizeEvidence($current);
 		$data = $this->validatedEvidence();
-		$this->authorizeAttendance($data['attendance_id'], $this->studentScope());
-		$imagePath = $this->storeImage($data['evidence_type']);
+		$this->authorizeLog($data['attendance_log_id'], $this->studentScope());
+		$imagePath = $this->storeImage();
 		$data['image_path'] = $imagePath;
 		try {
 			$this->evidence->updateEvidence($evidenceId, $data);
@@ -122,34 +122,33 @@ class AttendanceEvidenceController extends Controller
 		}
 	}
 
-	private function authorizeAttendance(int $attendanceId, ?int $studentId): void
+	private function authorizeLog(int $attendanceLogId, ?int $studentId): void
 	{
-		$attendance = $this->evidence->findAttendance($attendanceId);
-		if (!$attendance) {
-			$this->response->error('Attendance record not found', null, 422);
+		$log = $this->evidence->findLog($attendanceLogId);
+		if (!$log) {
+			$this->response->error('Attendance log not found', null, 422);
 		}
-		if ($studentId !== null && (int) $attendance['student_id'] !== $studentId) {
-			$this->response->forbidden('You may only use your own attendance record');
+		if ($studentId !== null && (int) $log['student_id'] !== $studentId) {
+			$this->response->forbidden('You may only use your own attendance log');
 		}
 	}
 
 	private function validatedEvidence(): array
 	{
 		$data = [
-			'attendance_id' => filter_var($this->input('attendance_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]),
-			'evidence_type' => strtolower($this->textInput('evidence_type')),
+			'attendance_log_id' => filter_var($this->input('attendance_log_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]),
+			'evidence_type' => 'selfie',
 		];
 		$image = $_FILES['image'] ?? null;
 		$errors = [];
-		if (!$data['attendance_id']) $errors['attendance_id'] = 'A valid attendance record is required.';
-		if (!in_array($data['evidence_type'], ['time_in', 'time_out'], true)) $errors['evidence_type'] = 'Evidence type must be time_in or time_out.';
+		if (!$data['attendance_log_id']) $errors['attendance_log_id'] = 'A valid attendance log is required.';
 		if (!$image || ($image['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) $errors['image'] = 'A valid image file is required.';
 		if ($image && ($image['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK && ((int) ($image['size'] ?? 0) > 5 * 1024 * 1024)) $errors['image'] = 'Image file must not exceed 5 MB.';
 		if ($errors) $this->response->error('Validation failed', $errors, 422);
 		return $data;
 	}
 
-	private function storeImage(string $evidenceType): string
+	private function storeImage(): string
 	{
 		$image = $_FILES['image'] ?? null;
 		if (!$image || ($image['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK || !is_uploaded_file($image['tmp_name'])) {
@@ -166,7 +165,7 @@ class AttendanceEvidenceController extends Controller
 			$this->response->error('Only JPG, PNG, and WEBP images are allowed', null, 422);
 		}
 
-		$directory = __DIR__ . '/../../public/storage/' . $evidenceType;
+		$directory = __DIR__ . '/../../public/storage/selfie';
 		if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
 			$this->response->serverError('Unable to create evidence storage directory');
 		}
@@ -176,12 +175,12 @@ class AttendanceEvidenceController extends Controller
 		if (!move_uploaded_file($image['tmp_name'], $target)) {
 			$this->response->serverError('Unable to store attendance evidence image');
 		}
-		return 'storage/' . $evidenceType . '/' . $fileName;
+		return 'storage/selfie/' . $fileName;
 	}
 
 	private function removeStoredImage(string $imagePath): void
 	{
-		if (!preg_match('#^storage/(time_in|time_out)/[A-Za-z0-9._-]+$#', $imagePath)) {
+		if (!preg_match('#^storage/selfie/[A-Za-z0-9._-]+$#', $imagePath)) {
 			return;
 		}
 		$filePath = __DIR__ . '/../../public/' . str_replace('/', DIRECTORY_SEPARATOR, $imagePath);
