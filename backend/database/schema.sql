@@ -141,24 +141,72 @@ CREATE TABLE IF NOT EXISTS attendance (
     attendance_id INT AUTO_INCREMENT PRIMARY KEY,
     student_company_id INT NOT NULL,
     attendance_date DATE NOT NULL,
-    time_in TIME DEFAULT NULL,
-    time_out TIME DEFAULT NULL,
+
     total_hours DECIMAL(5, 2) NOT NULL DEFAULT 0,
     status VARCHAR(30) NOT NULL DEFAULT 'pending',
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
     CONSTRAINT fk_attendance_requirement
-        FOREIGN KEY (student_company_id) REFERENCES ojt_student_company (student_company_id)
-        ON UPDATE CASCADE ON DELETE CASCADE,
-    UNIQUE KEY attendance_date_unique (student_company_id, attendance_date),
-    INDEX idx_attendance_student_company_id (student_company_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        FOREIGN KEY (student_company_id)
+        REFERENCES ojt_student_company (student_company_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    UNIQUE KEY attendance_date_unique (
+        student_company_id,
+        attendance_date
+    ),
+
+    INDEX idx_attendance_student_company_id (
+        student_company_id
+    )
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS attendance_log (
+    attendance_log_id INT AUTO_INCREMENT PRIMARY KEY,
+    attendance_id INT NOT NULL,
+
+    attendance_type ENUM(
+        'morning_in',
+        'morning_out',
+        'afternoon_in',
+        'afternoon_out'
+    ) NOT NULL,
+
+    attendance_time TIME NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_attendance_log_attendance
+        FOREIGN KEY (attendance_id)
+        REFERENCES attendance(attendance_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    UNIQUE KEY attendance_type_unique (
+        attendance_id,
+        attendance_type
+    ),
+
+    INDEX idx_attendance_log_attendance_id (
+        attendance_id
+    )
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS attendance_evidence (
     attendance_evidence_id INT AUTO_INCREMENT PRIMARY KEY,
-    attendance_id INT NOT NULL,
+    attendance_log_id INT NOT NULL,
 
-    evidence_type ENUM('time_in', 'time_out') NOT NULL,
+    evidence_type ENUM('selfie') NOT NULL DEFAULT 'selfie',
 
     image_path VARCHAR(500) NOT NULL,
 
@@ -168,19 +216,19 @@ CREATE TABLE IF NOT EXISTS attendance_evidence (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
-    CONSTRAINT fk_attendance_evidence_attendance
-        FOREIGN KEY (attendance_id)
-        REFERENCES attendance(attendance_id)
+    CONSTRAINT fk_attendance_evidence_log
+        FOREIGN KEY (attendance_log_id)
+        REFERENCES attendance_log(attendance_log_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
 
-    UNIQUE KEY attendance_evidence_type_unique (
-        attendance_id,
+    UNIQUE KEY attendance_log_evidence_unique (
+        attendance_log_id,
         evidence_type
     ),
 
-    INDEX idx_attendance_evidence_attendance_id (
-        attendance_id
+    INDEX idx_attendance_evidence_log (
+        attendance_log_id
     )
 ) ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
