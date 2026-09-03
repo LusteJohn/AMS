@@ -16,6 +16,7 @@ import FacultyOjtCompany from '../faculty/FacultyOjtCompany.vue'
 import AdminCompanySupervisor from '../admin/AdminCompanySupervisor.vue'
 import FacultyCompanySupervisor from '../faculty/FacultyCompanySupervisor.vue'
 import StudentCompanySupervisor from '../student/StudentCompanySupervisor.vue'
+import StudentAttendance from '../student/StudentAttendance.vue'
 
 function storedUser() {
   try {
@@ -52,6 +53,7 @@ const router = createRouter({
     { path: '/student/ojt-company', component: StudentOjtCompany, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/selected-ojt-company', component: StudentSelectedOjtCompany, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/company-supervisors', component: StudentCompanySupervisor, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
+    { path: '/student/attendance', component: StudentAttendance, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
   ],
 })
 
