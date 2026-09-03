@@ -11,6 +11,7 @@ import FacultyDashboard from '../faculty/FacultyDashboard.vue'
 import StudentDashboard from '../student/StudentDashboard.vue'
 import StudentProfile from '../student/StudentProfile.vue'
 import StudentOjtCompany from '../student/StudentOjtCompany.vue'
+import StudentSelectedOjtCompany from '../student/StudentSelectedOjtCompany.vue'
 import FacultyOjtCompany from '../faculty/FacultyOjtCompany.vue'
 import AdminCompanySupervisor from '../admin/AdminCompanySupervisor.vue'
 import FacultyCompanySupervisor from '../faculty/FacultyCompanySupervisor.vue'
@@ -49,6 +50,7 @@ const router = createRouter({
     { path: '/student', component: StudentDashboard, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/profile', component: StudentProfile, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/ojt-company', component: StudentOjtCompany, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
+    { path: '/student/selected-ojt-company', component: StudentSelectedOjtCompany, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
     { path: '/student/company-supervisors', component: StudentCompanySupervisor, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },
   ],
 })
