@@ -94,11 +94,25 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->delete('/faculty/{id}', [FacultyController::class, 'destroy']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
+$canManageCompanies = function (): void {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $role = strtolower(trim((string) ($_SESSION['user']['role'] ?? '')));
+    if (!in_array($role, ['admin', 'faculty', 'student'], true)) {
+        (new \App\Core\Response())->unauthorized('Admin, faculty, or student access required');
+    }
+};
+
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/companies', [OjtCompanyController::class, 'index']);
     $router->get('/companies/{id}', [OjtCompanyController::class, 'show']);
     $router->post('/companies', [OjtCompanyController::class, 'store']);
     $router->put('/companies/{id}', [OjtCompanyController::class, 'update']);
+}, [$canManageCompanies]);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
     $router->delete('/companies/{id}', [OjtCompanyController::class, 'destroy']);
 }, [AdminMiddleware::class . '::requireAdmin']);
 
