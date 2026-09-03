@@ -25,6 +25,7 @@ async function submitLogin() {
   isSubmitting.value = true
 
   try {
+    sessionStorage.removeItem('csrfToken')
     const response = await api.post('/api/auth/login', {
       login: login.value,
       password: password.value,
