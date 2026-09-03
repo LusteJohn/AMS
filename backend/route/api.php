@@ -19,6 +19,7 @@ use App\Controller\StudentController;
 use App\Controller\FacultyController;
 use App\Controller\OjtCompanyController;
 use App\Controller\CompanySupervisorController;
+use App\Controller\OjtStudentCompanyController;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\StudentMiddleware;
 
@@ -116,6 +117,14 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->delete('/companies/{id}', [OjtCompanyController::class, 'destroy']);
 }, [AdminMiddleware::class . '::requireAdmin']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/ojt-student-companies', [OjtStudentCompanyController::class, 'index']);
+    $router->get('/ojt-student-companies/{id}', [OjtStudentCompanyController::class, 'show']);
+    $router->post('/ojt-student-companies', [OjtStudentCompanyController::class, 'store']);
+    $router->put('/ojt-student-companies/{id}', [OjtStudentCompanyController::class, 'update']);
+    $router->delete('/ojt-student-companies/{id}', [OjtStudentCompanyController::class, 'destroy']);
+}, [$canManageCompanies]);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/company-supervisors', [CompanySupervisorController::class, 'index']);
