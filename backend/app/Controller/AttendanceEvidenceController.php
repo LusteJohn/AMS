@@ -49,7 +49,7 @@ class AttendanceEvidenceController extends Controller
 		$data['image_path'] = $imagePath;
 		try {
 			$evidenceId = $this->evidence->createEvidence($data);
-		} catch (PDOException $exception) {
+		} catch (\Throwable $exception) {
 			$this->removeStoredImage($imagePath);
 			if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
 				$this->response->error('Evidence for this attendance and type already exists', null, 409);
@@ -71,7 +71,7 @@ class AttendanceEvidenceController extends Controller
 		$data['image_path'] = $imagePath;
 		try {
 			$this->evidence->updateEvidence($evidenceId, $data);
-		} catch (PDOException $exception) {
+		} catch (\Throwable $exception) {
 			$this->removeStoredImage($imagePath);
 			if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
 				$this->response->error('Evidence for this attendance and type already exists', null, 409);

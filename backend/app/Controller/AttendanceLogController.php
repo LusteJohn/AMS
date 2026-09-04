@@ -129,6 +129,10 @@ class AttendanceLogController extends Controller
 			$this->response->error('Attendance can only be recorded for today', null, 422);
 		}
 		$scheduled = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d') . ' ' . $scheduledTime, $timezone);
+		if ($current < $scheduled) {
+			$label = ucwords(str_replace('_', ' ', $data['attendance_type']));
+			$this->response->error("{$label} cannot be recorded before {$scheduled->format('g:i A')}", null, 422);
+		}
 		$graceMinutes = max(0, (int) ($attendance['grace_period_minutes'] ?? 0));
 		$lateAt = $scheduled->modify("+{$graceMinutes} minutes");
 
