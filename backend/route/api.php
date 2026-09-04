@@ -160,6 +160,9 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/company-schedules', [AttendanceCompanyScheduleController::class, 'index']);
+}, [$canManageCompanies]);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/company-schedules/{id}', [AttendanceCompanyScheduleController::class, 'show']);
     $router->put('/company-schedules/{id}', [AttendanceCompanyScheduleController::class, 'update']);
     $router->delete('/company-schedules/{id}', [AttendanceCompanyScheduleController::class, 'destroy']);

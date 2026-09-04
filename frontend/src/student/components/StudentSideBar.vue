@@ -8,6 +8,7 @@
       <RouterLink to="/student/selected-ojt-company">Selected OJT company</RouterLink>
       <RouterLink to="/student/company-supervisors">Company supervisors</RouterLink>
       <RouterLink to="/student/attendance">Attendance</RouterLink>
+      <RouterLink to="/student/company-attendance">Company schedule</RouterLink>
     </nav>
   </aside>
 </template>
