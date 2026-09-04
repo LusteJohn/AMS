@@ -59,10 +59,13 @@ class AttendanceLog extends Model
 	public function findAttendance(int $attendanceId): ?array
 	{
 		return $this->fetch(
-			'SELECT a.attendance_id, osc.student_id
+			'SELECT a.attendance_id, a.attendance_date, osc.student_id, osc.company_id,
+					s.morning_in, s.morning_out, s.afternoon_in, s.afternoon_out,
+					s.grace_period_minutes
 			 FROM attendance a
 			 INNER JOIN ojt_student_company osc
 				 ON osc.student_company_id = a.student_company_id
+			 LEFT JOIN ojt_company_schedule s ON s.company_id = osc.company_id
 			 WHERE a.attendance_id = :attendance_id LIMIT 1',
 			[':attendance_id' => $attendanceId]
 		);
