@@ -13,6 +13,7 @@ class AttendanceLog extends Model
 	{
 		$sql = 'SELECT al.attendance_log_id, al.attendance_id,
 					   al.attendance_type, al.attendance_time,
+					   al.status,
 					   al.created_at, al.updated_at,
 					   a.attendance_date, osc.student_id,
 					   osc.company_id, c.company_name
@@ -41,6 +42,7 @@ class AttendanceLog extends Model
 		return $this->fetch(
 			'SELECT al.attendance_log_id, al.attendance_id,
 					al.attendance_type, al.attendance_time,
+					al.status,
 					al.created_at, al.updated_at,
 					a.attendance_date, osc.student_id,
 					osc.company_id, c.company_name
@@ -69,8 +71,8 @@ class AttendanceLog extends Model
 	public function createLog(array $data): int
 	{
 		$statement = $this->db->prepare(
-			'INSERT INTO attendance_log (attendance_id, attendance_type, attendance_time)
-			 VALUES (:attendance_id, :attendance_type, :attendance_time)'
+			'INSERT INTO attendance_log (attendance_id, attendance_type, attendance_time, status)
+			 VALUES (:attendance_id, :attendance_type, :attendance_time, :status)'
 		);
 		$this->bindLog($statement, $data);
 		$statement->execute();
@@ -81,7 +83,8 @@ class AttendanceLog extends Model
 	{
 		$statement = $this->db->prepare(
 			'UPDATE attendance_log SET attendance_id = :attendance_id,
-				attendance_type = :attendance_type, attendance_time = :attendance_time
+				attendance_type = :attendance_type, attendance_time = :attendance_time,
+				status = :status
 			 WHERE attendance_log_id = :attendance_log_id'
 		);
 		$this->bindLog($statement, $data);
@@ -103,5 +106,6 @@ class AttendanceLog extends Model
 		$statement->bindValue(':attendance_id', $data['attendance_id'], PDO::PARAM_INT);
 		$statement->bindValue(':attendance_type', $data['attendance_type'], PDO::PARAM_STR);
 		$statement->bindValue(':attendance_time', $data['attendance_time'], PDO::PARAM_STR);
+		$statement->bindValue(':status', $data['status'], PDO::PARAM_STR);
 	}
 }

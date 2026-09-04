@@ -108,11 +108,13 @@ class AttendanceLogController extends Controller
 			'attendance_id' => filter_var($this->input('attendance_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]),
 			'attendance_type' => strtolower($this->textInput('attendance_type')),
 			'attendance_time' => $this->timeInput('attendance_time'),
+			'status' => strtolower($this->textInput('status') ?: 'on_time'),
 		];
 		$errors = [];
 		if (!$data['attendance_id']) $errors['attendance_id'] = 'A valid attendance record is required.';
 		if (!in_array($data['attendance_type'], ['morning_in', 'morning_out', 'afternoon_in', 'afternoon_out'], true)) $errors['attendance_type'] = 'Invalid attendance type.';
 		if (!$data['attendance_time']) $errors['attendance_time'] = 'A valid attendance time is required.';
+		if (!in_array($data['status'], ['on_time', 'late'], true)) $errors['status'] = 'Status must be on_time or late.';
 		if ($errors) $this->response->error('Validation failed', $errors, 422);
 		return $data;
 	}
