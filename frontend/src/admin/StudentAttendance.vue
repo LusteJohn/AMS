@@ -127,7 +127,7 @@ onMounted(loadData)
 									<p v-if="isDetailsLoading">Loading logs and evidence...</p>
 									<div v-else-if="attendanceDetails[item.attendance_id]?.logs.length" class="details-content">
 										<h2>Attendance logs and evidence</h2>
-										<table class="nested-table"><thead><tr><th>Attendance type</th><th>Time</th><th>Evidence</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td><a v-if="evidenceForLog(item.attendance_id, log.attendance_log_id)" :href="evidenceUrl(evidenceForLog(item.attendance_id, log.attendance_log_id).image_path)" target="_blank" rel="noopener">View selfie</a><span v-else>No selfie</span></td></tr></tbody></table>
+										<table class="nested-table"><thead><tr><th>Attendance type</th><th>Time</th><th>Status</th><th>Evidence</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td>{{ log.status }}</td><td><a v-if="evidenceForLog(item.attendance_id, log.attendance_log_id)" :href="evidenceUrl(evidenceForLog(item.attendance_id, log.attendance_log_id).image_path)" target="_blank" rel="noopener">View selfie</a><span v-else>No selfie</span></td></tr></tbody></table>
 									</div>
 									<p v-else>No attendance logs or evidence found.</p>
 								</td>

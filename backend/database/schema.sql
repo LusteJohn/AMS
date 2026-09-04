@@ -180,6 +180,11 @@ CREATE TABLE IF NOT EXISTS attendance_log (
 
     attendance_time TIME NOT NULL,
 
+    status ENUM(
+        'on_time',
+        'late'
+    ) NOT NULL DEFAULT 'on_time',
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
@@ -261,3 +266,33 @@ CREATE TABLE IF NOT EXISTS attendance_corrections (
     INDEX idx_attendance_correction_requester (requested_by),
     INDEX idx_attendance_correction_reviewer (reviewed_by)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ojt_company_schedule (
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+
+    company_id INT NOT NULL,
+
+    morning_in TIME NOT NULL,
+    morning_out TIME NOT NULL,
+
+    afternoon_in TIME NOT NULL,
+    afternoon_out TIME NOT NULL,
+
+    grace_period_minutes INT NOT NULL DEFAULT 15,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_company_schedule_company
+        FOREIGN KEY (company_id)
+        REFERENCES ojt_company (company_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    UNIQUE KEY company_schedule_unique (company_id),
+
+    INDEX idx_company_schedule_company_id (company_id)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
