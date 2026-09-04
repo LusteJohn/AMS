@@ -90,6 +90,27 @@ function manilaClock() {
 	}).format(manilaNow.value)
 }
 
+function earlyAttendanceMessage(item, attendanceType) {
+	const schedule = scheduleForAttendance(item)
+	if (!schedule) return 'No attendance schedule has been configured for this company.'
+	const scheduleField = {
+		morning_in: 'morning_in',
+		morning_out: 'morning_out',
+		afternoon_in: 'afternoon_in',
+		afternoon_out: 'afternoon_out',
+	}[attendanceType]
+	const nowParts = new Intl.DateTimeFormat('en-CA', {
+		timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+	}).formatToParts(new Date())
+	const parts = Object.fromEntries(nowParts.map(({ type, value }) => [type, value]))
+	const today = `${parts.year}-${parts.month}-${parts.day}`
+	if (item.attendance_date !== today) return 'Attendance can only be recorded for today.'
+	const currentTime = `${parts.hour}:${parts.minute}`
+	const scheduledTime = String(schedule[scheduleField] || '').slice(0, 5)
+	if (currentTime < scheduledTime) return `${attendanceType.replaceAll('_', ' ')} cannot be recorded before ${scheduledTime}.`
+	return ''
+}
+
 function closeLogForm() {
 	if (!isSaving.value) {
 		stopCamera()
@@ -227,6 +248,11 @@ function stopCamera() {
 }
 
 async function saveLogAndSelfie() {
+	const timingError = earlyAttendanceMessage(logForm.value.attendance, logForm.value.attendance_type)
+	if (timingError) {
+		cameraError.value = timingError
+		return
+	}
 	if (!imageBlob.value) {
 		cameraError.value = 'Capture a selfie before saving the attendance log.'
 		return
@@ -340,7 +366,7 @@ th { background: #edf3f0; }
 .error, .camera-error { border-color: #b83b3b; background: #fff0ed; color: #a33b2e; }
 .success { border-color: #2b8a6e; background: #edf8f1; color: #21704f; }
 .modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(25 49 58 / 35%); z-index: 10; }
-.modal { width: min(520px, 100%); display: grid; gap: 14px; padding: 24px; background: #fffaf3; border: 1px solid #cbd8d5; border-radius: 6px; }
+.modal { width: min(520px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; display: grid; gap: 14px; padding: 24px; background: #fffaf3; border: 1px solid #cbd8d5; border-radius: 6px; }
 .modal label { display: grid; gap: 6px; font: 700 13px 'Roboto', sans-serif; }
 input, select { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #aebfbc; border-radius: 3px; font: 14px 'Roboto', sans-serif; }
 .modal-actions { justify-content: end; }
