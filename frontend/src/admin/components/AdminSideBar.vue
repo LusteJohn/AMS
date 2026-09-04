@@ -9,6 +9,7 @@
       <RouterLink to="/admin/faculty">Faculty</RouterLink>
       <RouterLink to="/admin/ojt-companies">OJT companies</RouterLink>
       <RouterLink to="/admin/company-supervisors">Company supervisors</RouterLink>
+      <RouterLink to="/admin/attendance">Student attendance</RouterLink>
     </nav>
   </aside>
 </template>
