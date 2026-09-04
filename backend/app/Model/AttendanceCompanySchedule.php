@@ -9,16 +9,21 @@ class AttendanceCompanySchedule extends Model
 {
 	protected string $table = 'ojt_company_schedule';
 
-	public function all(): array
+	public function all(?int $studentId = null): array
 	{
-		return $this->fetchAll(
-			'SELECT s.schedule_id, s.company_id, c.company_name,
+		$sql = 'SELECT s.schedule_id, s.company_id, c.company_name,
 					s.morning_in, s.morning_out, s.afternoon_in, s.afternoon_out,
 					s.grace_period_minutes, s.created_at, s.updated_at
 			 FROM ojt_company_schedule s
 			 INNER JOIN ojt_company c ON c.company_id = s.company_id
-			 ORDER BY c.company_name'
-		);
+			 LEFT JOIN ojt_student_company osc ON osc.company_id = s.company_id';
+		$params = [];
+		if ($studentId !== null) {
+			$sql .= ' WHERE osc.student_id = :student_id';
+			$params[':student_id'] = $studentId;
+		}
+		$sql .= ' ORDER BY c.company_name';
+		return $this->fetchAll($sql, $params);
 	}
 
 	public function find(int $scheduleId): ?array

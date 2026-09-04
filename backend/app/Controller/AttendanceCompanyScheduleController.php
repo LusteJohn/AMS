@@ -22,7 +22,7 @@ class AttendanceCompanyScheduleController extends Controller
 
 	public function index(): void
 	{
-		$this->json(['success' => true, 'data' => $this->schedules->all()]);
+		$this->json(['success' => true, 'data' => $this->schedules->all($this->studentScope())]);
 	}
 
 	public function show(string $id): void
