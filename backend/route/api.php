@@ -23,6 +23,7 @@ use App\Controller\OjtStudentCompanyController;
 use App\Controller\AttendanceController;
 use App\Controller\AttendanceEvidenceController;
 use App\Controller\AttendanceLogController;
+use App\Controller\AttendanceCompanyScheduleController;
 use App\Middleware\AdminMiddleware;
 use App\Middleware\StudentMiddleware;
 
@@ -152,6 +153,17 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->put('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'update']);
     $router->delete('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'destroy']);
 }, [$canManageCompanies]);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->post('/company-schedules', [AttendanceCompanyScheduleController::class, 'store']);
+}, [StudentMiddleware::class . '::requireStudent']);
+
+$router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/company-schedules', [AttendanceCompanyScheduleController::class, 'index']);
+    $router->get('/company-schedules/{id}', [AttendanceCompanyScheduleController::class, 'show']);
+    $router->put('/company-schedules/{id}', [AttendanceCompanyScheduleController::class, 'update']);
+    $router->delete('/company-schedules/{id}', [AttendanceCompanyScheduleController::class, 'destroy']);
+}, [AdminMiddleware::class . '::requireAdmin']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/company-supervisors', [CompanySupervisorController::class, 'index']);
