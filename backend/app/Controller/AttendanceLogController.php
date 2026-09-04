@@ -40,8 +40,11 @@ class AttendanceLogController extends Controller
 	{
 		$this->requireCsrf();
 		$studentId = $this->studentScope();
-		$data = $this->validatedLog();
-		$this->authorizeAttendance($data['attendance_id'], $studentId);
+		$data = $this->validatedLog($studentId === null);
+		$attendance = $this->authorizeAttendance($data['attendance_id'], $studentId);
+		if ($studentId !== null) {
+			$data = $this->applyCurrentSchedule($data, $attendance);
+		}
 		try {
 			$logId = $this->logs->createLog($data);
 		} catch (PDOException $exception) {
@@ -57,8 +60,12 @@ class AttendanceLogController extends Controller
 		$logId = $this->positiveId($id, 'attendance log');
 		$current = $this->logs->find($logId);
 		$this->authorizeLog($current);
-		$data = $this->validatedLog();
-		$this->authorizeAttendance($data['attendance_id'], $this->studentScope());
+		$studentId = $this->studentScope();
+		$data = $this->validatedLog($studentId === null);
+		$attendance = $this->authorizeAttendance($data['attendance_id'], $studentId);
+		if ($studentId !== null) {
+			$data = $this->applyCurrentSchedule($data, $attendance);
+		}
 		try {
 			$this->logs->updateLog($logId, $data);
 		} catch (PDOException $exception) {
@@ -95,26 +102,54 @@ class AttendanceLogController extends Controller
 		if ($studentId !== null && (int) $log['student_id'] !== $studentId) $this->response->forbidden('You may only manage your own attendance logs');
 	}
 
-	private function authorizeAttendance(int $attendanceId, ?int $studentId): void
+	private function authorizeAttendance(int $attendanceId, ?int $studentId): array
 	{
 		$attendance = $this->logs->findAttendance($attendanceId);
 		if (!$attendance) $this->response->error('Attendance record not found', null, 422);
 		if ($studentId !== null && (int) $attendance['student_id'] !== $studentId) $this->response->forbidden('You may only use your own attendance record');
+		return $attendance;
 	}
 
-	private function validatedLog(): array
+	private function applyCurrentSchedule(array $data, array $attendance): array
+	{
+		$scheduleField = [
+			'morning_in' => 'morning_in',
+			'morning_out' => 'morning_out',
+			'afternoon_in' => 'afternoon_in',
+			'afternoon_out' => 'afternoon_out',
+		][$data['attendance_type']];
+		$scheduledTime = $attendance[$scheduleField] ?? null;
+		if (!$scheduledTime) {
+			$this->response->error('No attendance schedule has been configured for this company', null, 422);
+		}
+
+		$timezone = new \DateTimeZone('Asia/Manila');
+		$current = new \DateTimeImmutable('now', $timezone);
+		if (($attendance['attendance_date'] ?? '') !== $current->format('Y-m-d')) {
+			$this->response->error('Attendance can only be recorded for today', null, 422);
+		}
+		$scheduled = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $current->format('Y-m-d') . ' ' . $scheduledTime, $timezone);
+		$graceMinutes = max(0, (int) ($attendance['grace_period_minutes'] ?? 0));
+		$lateAt = $scheduled->modify("+{$graceMinutes} minutes");
+
+		$data['attendance_time'] = $current->format('H:i:s');
+		$data['status'] = $current > $lateAt ? 'late' : 'on_time';
+		return $data;
+	}
+
+	private function validatedLog(bool $requireClientTiming = true): array
 	{
 		$data = [
 			'attendance_id' => filter_var($this->input('attendance_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]),
 			'attendance_type' => strtolower($this->textInput('attendance_type')),
-			'attendance_time' => $this->timeInput('attendance_time'),
-			'status' => strtolower($this->textInput('status') ?: 'on_time'),
+			'attendance_time' => $requireClientTiming ? $this->timeInput('attendance_time') : null,
+			'status' => $requireClientTiming ? strtolower($this->textInput('status') ?: 'on_time') : 'on_time',
 		];
 		$errors = [];
 		if (!$data['attendance_id']) $errors['attendance_id'] = 'A valid attendance record is required.';
 		if (!in_array($data['attendance_type'], ['morning_in', 'morning_out', 'afternoon_in', 'afternoon_out'], true)) $errors['attendance_type'] = 'Invalid attendance type.';
-		if (!$data['attendance_time']) $errors['attendance_time'] = 'A valid attendance time is required.';
-		if (!in_array($data['status'], ['on_time', 'late'], true)) $errors['status'] = 'Status must be on_time or late.';
+		if ($requireClientTiming && !$data['attendance_time']) $errors['attendance_time'] = 'A valid attendance time is required.';
+		if ($requireClientTiming && !in_array($data['status'], ['on_time', 'late'], true)) $errors['status'] = 'Status must be on_time or late.';
 		if ($errors) $this->response->error('Validation failed', $errors, 422);
 		return $data;
 	}

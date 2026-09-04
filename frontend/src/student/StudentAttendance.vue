@@ -5,6 +5,7 @@ import api from '../api/axios'
 import StudentSideBar from './components/StudentSideBar.vue'
 
 const assignments = ref([])
+const companySchedules = ref([])
 const attendance = ref([])
 const attendanceForm = ref(null)
 const logForm = ref(null)
@@ -21,8 +22,10 @@ const cameraError = ref('')
 const selfiePreview = ref('')
 const imageBlob = ref(null)
 const video = ref(null)
+const manilaNow = ref(new Date())
 let cameraStream = null
 let messageTimer
+let clockTimer
 
 const attendanceFormTitle = computed(() => attendanceForm.value?.id ? 'Edit attendance' : 'Add attendance')
 
@@ -77,6 +80,16 @@ function openLogForm(item) {
 	cameraError.value = ''
 }
 
+function scheduleForAttendance(item) {
+	return companySchedules.value.find((schedule) => Number(schedule.company_id) === Number(item.company_id)) || null
+}
+
+function manilaClock() {
+	return new Intl.DateTimeFormat('en-PH', {
+		timeZone: 'Asia/Manila', dateStyle: 'medium', timeStyle: 'medium', hour12: true,
+	}).format(manilaNow.value)
+}
+
 function closeLogForm() {
 	if (!isSaving.value) {
 		stopCamera()
@@ -87,12 +100,14 @@ function closeLogForm() {
 async function loadData() {
 	isLoading.value = true
 	try {
-		const [attendanceResponse, assignmentResponse] = await Promise.all([
+		const [attendanceResponse, assignmentResponse, scheduleResponse] = await Promise.all([
 			api.get('/api/attendance'),
 			api.get('/api/ojt-student-companies'),
+			api.get('/api/company-schedules'),
 		])
 		attendance.value = Array.isArray(attendanceResponse.data?.data) ? attendanceResponse.data.data : []
 		assignments.value = Array.isArray(assignmentResponse.data?.data) ? assignmentResponse.data.data : []
+		companySchedules.value = Array.isArray(scheduleResponse.data?.data) ? scheduleResponse.data.data : []
 	} catch (error) {
 		showMessage('error', apiError(error))
 	} finally {
@@ -221,8 +236,6 @@ async function saveLogAndSelfie() {
 		const logResponse = await api.post('/api/attendance-logs', {
 			attendance_id: logForm.value.attendance.attendance_id,
 			attendance_type: logForm.value.attendance_type,
-			attendance_time: logForm.value.attendance_time,
-			status: logForm.value.status,
 		})
 		const attendanceLogId = logResponse.data?.data?.attendance_log_id
 		if (!attendanceLogId) throw new Error('Attendance log ID was not returned.')
@@ -242,9 +255,13 @@ async function saveLogAndSelfie() {
 	}
 }
 
-onMounted(loadData)
+onMounted(() => {
+		loadData()
+		clockTimer = window.setInterval(() => { manilaNow.value = new Date() }, 1000)
+})
 onBeforeUnmount(() => {
 	stopCamera()
+	window.clearInterval(clockTimer)
 	if (selfiePreview.value) URL.revokeObjectURL(selfiePreview.value)
 })
 </script>
@@ -254,7 +271,7 @@ onBeforeUnmount(() => {
 		<StudentSideBar />
 		<main class="attendance-page">
 			<header class="page-header">
-				<div><p class="eyebrow">Student placement</p><h1>Attendance</h1><p>Record your daily attendance and time logs.</p></div>
+				<div><p class="eyebrow">Student placement</p><h1>Attendance</h1><p>Record your daily attendance and time logs.</p></div><div class="clock" aria-live="polite"><span>Asia/Manila</span><strong>{{ manilaClock() }}</strong></div>
 				<div class="header-actions"><button type="button" :disabled="isLoading" @click="loadData">Refresh</button><button type="button" @click="openAttendanceCreate">Add attendance</button></div>
 			</header>
 
@@ -274,7 +291,7 @@ onBeforeUnmount(() => {
 									<p v-if="isDetailsLoading">Loading attendance logs and evidence...</p>
 									<div v-else-if="attendanceDetails[item.attendance_id]?.logs.length" class="details-content">
 										<h3>Attendance logs and evidence</h3>
-										<table class="nested-table"><thead><tr><th>Type</th><th>Time</th><th>Evidence</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td><a v-if="evidenceForLog(log.attendance_log_id)" :href="evidenceUrl(evidenceForLog(log.attendance_log_id).image_path)" target="_blank" rel="noopener">View selfie</a><span v-else>No selfie</span></td></tr></tbody></table>
+										<table class="nested-table"><thead><tr><th>Type</th><th>Time</th><th>Status</th><th>Evidence</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td>{{ log.status }}</td><td><a v-if="evidenceForLog(log.attendance_log_id)" :href="evidenceUrl(evidenceForLog(log.attendance_log_id).image_path)" target="_blank" rel="noopener">View selfie</a><span v-else>No selfie</span></td></tr></tbody></table>
 									</div>
 									<p v-else>No attendance logs or evidence found.</p>
 								</td>
@@ -288,7 +305,7 @@ onBeforeUnmount(() => {
 
 		<div v-if="attendanceForm" class="modal-backdrop" @click.self="closeAttendanceForm"><form class="modal" @submit.prevent="saveAttendance"><h2>{{ attendanceFormTitle }}</h2><label>OJT company<select v-model="attendanceForm.student_company_id" required><option disabled value="">Select company assignment</option><option v-for="assignment in assignments" :key="assignment.student_company_id" :value="assignment.student_company_id">{{ assignment.company_name }} ({{ assignment.ojt_start_date }} to {{ assignment.ojt_end_date }})</option></select></label><label>Attendance date<input v-model="attendanceForm.attendance_date" type="date" required /></label><label>Total hours<input v-model.number="attendanceForm.total_hours" type="number" min="0" max="999.99" step="0.01" required /></label><label>Status<select v-model="attendanceForm.status" required><option value="pending">Pending</option><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option><option value="leave">Leave</option></select></label><div class="modal-actions"><button type="button" :disabled="isSaving" @click="closeAttendanceForm">Cancel</button><button type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : 'Save attendance' }}</button></div></form></div>
 
-		<div v-if="logForm" class="modal-backdrop" @click.self="closeLogForm"><form class="modal log-modal" @submit.prevent="saveLogAndSelfie"><h2>Add attendance log</h2><p class="context">{{ logForm.attendance.company_name }} · {{ logForm.attendance.attendance_date }}</p><label>Attendance type<select v-model="logForm.attendance_type" required><option value="morning_in">Morning in</option><option value="morning_out">Morning out</option><option value="afternoon_in">Afternoon in</option><option value="afternoon_out">Afternoon out</option></select></label><label>Attendance time<input v-model="logForm.attendance_time" type="time" required /></label><label>Status<select v-model="logForm.status" required><option value="on_time">On time</option><option value="late">Late</option></select></label><div class="camera-box"><video ref="video" v-show="!selfiePreview" autoplay playsinline></video><img v-if="selfiePreview" :src="selfiePreview" alt="Captured attendance selfie" /><p v-if="cameraError" class="camera-error" role="alert">{{ cameraError }}</p><div class="camera-actions"><button type="button" :disabled="isCameraLoading || isSaving" @click="startCamera">{{ isCameraLoading ? 'Opening camera...' : 'Open camera' }}</button><button type="button" :disabled="!cameraActive || isSaving" @click="captureSelfie">Capture selfie</button></div></div><div class="modal-actions"><button type="button" :disabled="isSaving" @click="closeLogForm">Cancel</button><button type="submit" :disabled="isSaving || !imageBlob">{{ isSaving ? 'Saving...' : 'Save log and selfie' }}</button></div></form></div>
+		<div v-if="logForm" class="modal-backdrop" @click.self="closeLogForm"><form class="modal log-modal" @submit.prevent="saveLogAndSelfie"><h2>Add attendance log</h2><p class="context">{{ logForm.attendance.company_name }} · {{ logForm.attendance.attendance_date }}</p><label>Attendance type<select v-model="logForm.attendance_type" required><option value="morning_in">Morning in</option><option value="morning_out">Morning out</option><option value="afternoon_in">Afternoon in</option><option value="afternoon_out">Afternoon out</option></select></label><div v-if="scheduleForAttendance(logForm.attendance)" class="schedule-context"><strong>Company schedule</strong><span>Morning: {{ scheduleForAttendance(logForm.attendance).morning_in }} - {{ scheduleForAttendance(logForm.attendance).morning_out }}</span><span>Afternoon: {{ scheduleForAttendance(logForm.attendance).afternoon_in }} - {{ scheduleForAttendance(logForm.attendance).afternoon_out }}</span><span>Grace period: {{ scheduleForAttendance(logForm.attendance).grace_period_minutes }} minutes</span></div><p class="current-time">Recorded time: <strong>{{ manilaClock() }}</strong><br /><small>Status is calculated from the company schedule.</small></p><div class="camera-box"><video ref="video" v-show="!selfiePreview" autoplay playsinline></video><img v-if="selfiePreview" :src="selfiePreview" alt="Captured attendance selfie" /><p v-if="cameraError" class="camera-error" role="alert">{{ cameraError }}</p><div class="camera-actions"><button type="button" :disabled="isCameraLoading || isSaving" @click="startCamera">{{ isCameraLoading ? 'Opening camera...' : 'Open camera' }}</button><button type="button" :disabled="!cameraActive || isSaving" @click="captureSelfie">Capture selfie</button></div></div><div class="modal-actions"><button type="button" :disabled="isSaving" @click="closeLogForm">Cancel</button><button type="submit" :disabled="isSaving || !imageBlob">{{ isSaving ? 'Saving...' : 'Save log and selfie' }}</button></div></form></div>
 	</div>
 </template>
 
@@ -303,6 +320,9 @@ onBeforeUnmount(() => {
 .eyebrow { margin: 0 0 8px; color: #b04a32; font: 700 12px 'Roboto', sans-serif; text-transform: uppercase; letter-spacing: .08em; }
 h1, h2 { margin: 0; }
 .page-header p:last-child, .context { color: #5b747b; }
+.clock { display: grid; gap: 4px; min-width: 210px; padding: 12px 14px; border-left: 3px solid #d96b45; background: #edf3f0; }
+.clock span { color: #b04a32; font: 700 11px 'Roboto', sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.clock strong { font: 700 14px 'Roboto', sans-serif; }
 .table-wrap { overflow-x: auto; }
 button { border: 1px solid #b9cbc6; border-radius: 4px; padding: 8px 12px; background: #fffaf3; color: #19313a; cursor: pointer; font-family: 'Roboto', sans-serif; }
 button:hover { border-color: #d96b45; }
@@ -313,6 +333,8 @@ th { background: #edf3f0; }
 .details-row > td { padding: 18px; background: #f7faf8; }
 .details-content h3 { margin: 0 0 12px; font-size: 16px; }
 .nested-table { background: #fffaf3; }
+.schedule-context { display: grid; gap: 4px; padding: 12px; border-left: 3px solid #2b8a6e; background: #edf8f1; font-size: 13px; }
+.current-time { margin: 0; padding: 10px 12px; background: #edf3f0; line-height: 1.5; }
 .message-container { position: fixed; top: 24px; right: 24px; z-index: 20; width: min(360px, calc(100vw - 48px)); }
 .message { margin: 0; padding: 14px 16px; border-left: 4px solid; border-radius: 4px; box-shadow: 0 8px 24px rgb(25 49 58 / 14%); font: 14px/1.4 'Roboto', sans-serif; }
 .error, .camera-error { border-color: #b83b3b; background: #fff0ed; color: #a33b2e; }
