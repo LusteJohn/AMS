@@ -11,6 +11,7 @@ const isSaving = ref(false)
 const isSubmitted = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const isFormOpen = ref(false)
 let messageTimer
 
 const form = ref({
@@ -36,6 +37,18 @@ function apiError(error) {
   const errors = error.response?.data?.errors
   if (errors && typeof errors === 'object') return Object.values(errors).join(' ')
   return error.response?.data?.message || error.message || 'Request failed.'
+}
+
+function formatTime12(value) {
+  if (!value) return '-'
+  const [hours, minutes] = String(value).split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return value
+  const date = new Date(2000, 0, 1, hours, minutes)
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date)
 }
 
 async function loadAssignments() {
@@ -80,6 +93,8 @@ async function saveSchedule() {
       grace_period_minutes: Number(form.value.grace_period_minutes),
     })
     isSubmitted.value = true
+    isFormOpen.value = false
+    await loadAssignments()
     showMessage('success', 'Company attendance schedule submitted successfully.')
   } catch (error) {
     showMessage('error', apiError(error))
@@ -110,9 +125,29 @@ onMounted(loadAssignments)
 
       <p v-if="isLoading">Loading your OJT companies...</p>
       <p v-else-if="!assignments.length" class="notice">You must have an OJT company assignment before submitting a schedule.</p>
-      <form v-else class="schedule-form" @submit.prevent="saveSchedule">
-        <fieldset :disabled="isSubmitted || isSaving">
-          <legend>{{ isSubmitted ? 'Submitted attendance schedule' : 'Attendance schedule' }}</legend>
+      <button v-else type="button" :disabled="isSubmitted" @click="isFormOpen = true">Add attendance schedule</button>
+
+      <section class="records-section">
+        <h2>Submitted schedules</h2>
+        <table>
+          <thead><tr><th>Company</th><th>Morning</th><th>Afternoon</th><th>Grace period</th></tr></thead>
+          <tbody>
+            <tr v-for="schedule in schedules" :key="schedule.schedule_id">
+              <td>{{ schedule.company_name }}</td>
+              <td>{{ formatTime12(schedule.morning_in) }} - {{ formatTime12(schedule.morning_out) }}</td>
+              <td>{{ formatTime12(schedule.afternoon_in) }} - {{ formatTime12(schedule.afternoon_out) }}</td>
+              <td>{{ schedule.grace_period_minutes }} minutes</td>
+            </tr>
+            <tr v-if="!schedules.length"><td colspan="4">No attendance schedule submitted yet.</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <div v-if="isFormOpen" class="modal-backdrop" @click.self="isFormOpen = false">
+      <form class="modal" @submit.prevent="saveSchedule">
+        <h2>Attendance schedule</h2>
+        <fieldset :disabled="isSaving">
           <label>
             Selected company
             <select v-model="form.company_id" required>
@@ -133,27 +168,12 @@ onMounted(loadAssignments)
             <input v-model.number="form.grace_period_minutes" type="number" min="0" max="1440" required />
           </label>
         </fieldset>
-        <button v-if="!isSubmitted" type="submit" :disabled="isSaving">
-          {{ isSaving ? 'Submitting...' : 'Submit schedule' }}
-        </button>
+        <div class="modal-actions">
+          <button type="button" :disabled="isSaving" @click="isFormOpen = false">Cancel</button>
+          <button type="submit" :disabled="isSaving">{{ isSaving ? 'Submitting...' : 'Submit schedule' }}</button>
+        </div>
       </form>
-
-    <section class="records-section">
-      <h2>Submitted schedules</h2>
-      <table>
-        <thead><tr><th>Company</th><th>Morning</th><th>Afternoon</th><th>Grace period</th></tr></thead>
-        <tbody>
-          <tr v-for="schedule in schedules" :key="schedule.schedule_id">
-            <td>{{ schedule.company_name }}</td>
-            <td>{{ schedule.morning_in }} - {{ schedule.morning_out }}</td>
-            <td>{{ schedule.afternoon_in }} - {{ schedule.afternoon_out }}</td>
-            <td>{{ schedule.grace_period_minutes }} minutes</td>
-          </tr>
-          <tr v-if="!schedules.length"><td colspan="4">No attendance schedule submitted yet.</td></tr>
-        </tbody>
-      </table>
-    </section>
-    </main>
+    </div>
   </div>
 </template>
 
@@ -183,5 +203,8 @@ button:disabled { cursor: wait; opacity: .6; }
 .message { margin: 0; padding: 14px 16px; border-left: 4px solid; border-radius: 4px; box-shadow: 0 8px 24px rgb(25 49 58 / 14%); font: 14px/1.4 'Roboto', sans-serif; }
 .error { border-color: #b83b3b; background: #fff0ed; color: #a33b2e; }
 .success { border-color: #2b8a6e; background: #edf8f1; color: #21704f; }
+.modal-backdrop { position: fixed; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(25 49 58 / 35%); z-index: 10; }
+.modal { width: min(520px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; display: grid; gap: 14px; padding: 24px; background: #fffaf3; border: 1px solid #cbd8d5; border-radius: 6px; }
+.modal-actions { display: flex; justify-content: end; gap: 8px; }
 @media (max-width: 700px) { .student-layout { display: block; } .schedule-page { padding: 24px 16px; } .time-grid { grid-template-columns: 1fr; } }
 </style>

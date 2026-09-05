@@ -29,7 +29,8 @@ abstract class Model
 
     protected function fetch(string $sql, array $params = []): ?array
     {
-        return $this->query($sql, $params)->fetch();
+        $result = $this->query($sql, $params)->fetch();
+        return $result === false ? null : $result;
     }
 
     protected function fetchAll(string $sql, array $params = []): array
