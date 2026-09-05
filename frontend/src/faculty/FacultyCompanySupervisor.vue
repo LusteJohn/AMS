@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import api from '../api/axios'
 import FacultySideBar from './components/FacultySideBar.vue'
+import '../assets/faculty/FacultyCompanySupervisor.css'
 
 const supervisors = ref([])
 const companies = ref([])

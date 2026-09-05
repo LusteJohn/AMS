@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import api from '../api/axios'
 import StudentSideBar from './components/StudentSideBar.vue'
+import '../assets/student/StudentProfile.css'
 
 const profile = ref(null)
 const sections = ref([])

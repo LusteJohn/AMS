@@ -1,0 +1,8 @@
+@import './StudentBase.css';
+.schedule-page { flex: 1; min-width: 0; max-width: 1100px; padding: 40px clamp(20px, 4vw, 56px); background: var(--student-canvas); }
+.schedule-page fieldset { display: grid; gap: 18px; margin: 0; padding: 24px; border: 1px solid var(--student-line); border-radius: 14px; background: var(--student-surface); }
+.time-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.notice, .current-time { padding: 16px; border-left: 4px solid var(--student-mint-dark); background: var(--student-mint-soft); }
+.records-section { margin-top: 36px; }
+.records-section > table { border: 1px solid var(--student-line); border-radius: 12px; background: var(--student-surface); }
+@media (max-width: 760px) { .student-layout { display: block; } .schedule-page { padding: 28px 16px 92px; } .time-grid { grid-template-columns: 1fr; } }

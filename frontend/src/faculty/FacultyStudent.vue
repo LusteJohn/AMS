@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 
 import api from '../api/axios'
 import FacultySideBar from './components/FacultySideBar.vue'
+import '../assets/faculty/FacultyStudent.css'
 
 const students = ref([])
 const facultyProfile = ref(null)

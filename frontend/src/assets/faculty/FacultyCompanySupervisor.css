@@ -1,0 +1,5 @@
+@import './FacultyBase.css';
+.layout { display: flex; min-height: 100vh; }
+.page { flex: 1; min-width: 0; max-width: 1440px; padding: 40px clamp(20px, 4vw, 56px); background: var(--faculty-canvas); }
+.page > table { overflow: auto; border: 1px solid var(--faculty-line); border-radius: 12px; background: var(--faculty-surface); box-shadow: var(--faculty-shadow); }
+@media (max-width: 760px) { .layout { display: block; } .page { padding: 28px 16px 92px; overflow-x: auto; } }
