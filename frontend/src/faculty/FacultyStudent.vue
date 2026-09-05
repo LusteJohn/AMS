@@ -2,10 +2,10 @@
 import { onMounted, ref } from 'vue'
 
 import api from '../api/axios'
-import AdminSideBar from './components/AdminSideBar.vue'
+import FacultySideBar from './components/FacultySideBar.vue'
 
 const students = ref([])
-const sections = ref([])
+const facultyProfile = ref(null)
 const isLoading = ref(false)
 const isSaving = ref(false)
 const isFormOpen = ref(false)
@@ -14,22 +14,13 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const csvFile = ref(null)
 const isCsvHelpOpen = ref(false)
+const manualForm = ref({
+  username: '', email: '', password: '', school_id: '',
+  firstname: '', middlename: '', lastname: '', name_ext: '', gender: '', address: '',
+})
 let messageTimer
 
-const sectionId = ref('')
-const manualForm = ref({
-  username: '',
-  email: '',
-  password: '',
-  section_id: '',
-  school_id: '',
-  firstname: '',
-  middlename: '',
-  lastname: '',
-  name_ext: '',
-  gender: '',
-  address: '',
-})
+const facultySectionId = ref('')
 
 function showMessage(type, message) {
   errorMessage.value = type === 'error' ? message : ''
@@ -47,7 +38,6 @@ function apiError(error) {
 
 function resetForm() {
   csvFile.value = null
-  sectionId.value = ''
   isCsvHelpOpen.value = false
 }
 
@@ -58,7 +48,7 @@ function openForm() {
 
 function openManualForm() {
   manualForm.value = {
-    username: '', email: '', password: '', section_id: '', school_id: '',
+    username: '', email: '', password: '', school_id: '',
     firstname: '', middlename: '', lastname: '', name_ext: '', gender: '', address: '',
   }
   isManualFormOpen.value = true
@@ -79,12 +69,13 @@ function closeManualForm() {
 async function loadStudents() {
   isLoading.value = true
   try {
-    const [studentsResponse, sectionsResponse] = await Promise.all([
+    const [studentsResponse, profileResponse] = await Promise.all([
       api.get('/api/students'),
-      api.get('/api/sections'),
+      api.get('/api/faculty/profile'),
     ])
     students.value = Array.isArray(studentsResponse.data?.data) ? studentsResponse.data.data : []
-    sections.value = Array.isArray(sectionsResponse.data?.data) ? sectionsResponse.data.data : []
+    facultyProfile.value = profileResponse.data?.data
+    facultySectionId.value = facultyProfile.value?.section_id || ''
   } catch (error) {
     showMessage('error', apiError(error))
   } finally {
@@ -97,7 +88,7 @@ async function importStudents() {
   try {
     const payload = new FormData()
     payload.append('csv_file', csvFile.value)
-    payload.append('section_id', sectionId.value)
+    payload.append('section_id', String(facultySectionId.value))
     await api.post('/api/students/import', payload)
     isFormOpen.value = false
     showMessage('success', 'Student account registered successfully.')
@@ -114,7 +105,7 @@ async function registerStudent() {
   try {
     await api.post('/api/students', {
       ...manualForm.value,
-      section_id: Number(manualForm.value.section_id),
+      section_id: Number(facultySectionId.value),
       school_id: manualForm.value.school_id || null,
     })
     isManualFormOpen.value = false
@@ -131,14 +122,19 @@ onMounted(loadStudents)
 </script>
 
 <template>
-  <div class="admin-layout">
-    <AdminSideBar />
-    <main class="student-page">
+  <div class="faculty-layout">
+    <FacultySideBar />
+    <main class="faculty-student-page">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Administration</p>
+          <p class="eyebrow">Faculty</p>
           <h1>Students</h1>
-          <p>Register student accounts and view student profiles.</p>
+          <p>View student profiles and register new student accounts in your section.</p>
+          <p v-if="facultyProfile" class="section-info">
+            Assigned section:
+            <strong>{{ facultyProfile.section_name }}</strong>
+            ({{ facultyProfile.program_name }} - {{ facultyProfile.college_name }})
+          </p>
         </div>
         <div class="header-actions">
           <button type="button" :disabled="isLoading" @click="loadStudents">Refresh</button>
@@ -153,7 +149,7 @@ onMounted(loadStudents)
       </div>
 
       <p v-if="isLoading">Loading students...</p>
-      <table>
+      <table v-else>
         <thead>
           <tr><th>Student</th><th>Account</th><th>School ID</th><th>Section</th><th>Program</th><th>College</th></tr>
         </thead>
@@ -184,21 +180,14 @@ onMounted(loadStudents)
           <pre>school_id,firstname,middlename,lastname,gender
 20260001,Juan,,Dela Cruz,male</pre>
           <ul>
-            <li>Select the section separately from the dropdown.</li>
+            <li>The section is automatically set to your assigned section.</li>
             <li>Use a school ID with up to 10 characters.</li>
             <li>The school ID becomes the username and initial password.</li>
             <li>Leave middlename blank when it is not available.</li>
           </ul>
         </div>
         <p class="modal-help">Required columns: school_id, firstname, middlename, lastname, gender.</p>
-        <label>Section
-          <select v-model="sectionId" required>
-            <option disabled value="">Select section</option>
-            <option v-for="section in sections" :key="section.section_id" :value="section.section_id">
-              {{ section.college_name }} - {{ section.program_name }} - {{ section.section_name || section.section }}
-            </option>
-          </select>
-        </label>
+        <p class="modal-help">Students will be registered to your assigned section: <strong>{{ facultyProfile?.section_name || '-' }}</strong></p>
         <label>CSV or XLSX file<input type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required @change="selectCsv" /></label>
         <div class="modal-actions">
           <button type="button" :disabled="isSaving" @click="closeForm">Cancel</button>
@@ -209,18 +198,13 @@ onMounted(loadStudents)
 
     <div v-if="isManualFormOpen" class="modal-backdrop" @click.self="closeManualForm">
       <form class="modal" @submit.prevent="registerStudent">
-        <h2>Register one student</h2>
+        <div class="modal-title">
+          <h2>Register one student</h2>
+        </div>
+        <p class="modal-help">This student will be registered to your assigned section: <strong>{{ facultyProfile?.section_name || '-' }}</strong></p>
         <label>Username<input v-model.trim="manualForm.username" required maxlength="100" autocomplete="username" /></label>
         <label>Email<input v-model.trim="manualForm.email" type="email" required maxlength="100" autocomplete="email" /></label>
         <label>Password<input v-model="manualForm.password" type="password" required autocomplete="new-password" /></label>
-        <label>Section
-          <select v-model="manualForm.section_id" required>
-            <option disabled value="">Select section</option>
-            <option v-for="section in sections" :key="section.section_id" :value="section.section_id">
-              {{ section.college_name }} - {{ section.program_name }} - {{ section.section_name || section.section }}
-            </option>
-          </select>
-        </label>
         <label>School ID<input v-model.trim="manualForm.school_id" maxlength="10" /></label>
         <label>First name<input v-model.trim="manualForm.firstname" required maxlength="50" /></label>
         <label>Middle name<input v-model.trim="manualForm.middlename" maxlength="50" /></label>
@@ -243,13 +227,15 @@ onMounted(loadStudents)
 </template>
 
 <style scoped>
-.admin-layout { display: flex; min-height: 100vh; color: #19313a; }
-.student-page { flex: 1; max-width: 1200px; padding: 40px; }
+.faculty-layout { display: flex; min-height: 100vh; color: #19313a; }
+.faculty-student-page { flex: 1; max-width: 1200px; padding: 40px; }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
-.header-actions, .modal-actions { display: flex; gap: 8px; }
+.header-actions { display: flex; gap: 8px; }
 .eyebrow { margin: 0 0 8px; color: #b04a32; font: 700 12px 'Roboto', sans-serif; text-transform: uppercase; letter-spacing: .08em; }
 h1, h2 { margin: 0; }
 .page-header p:last-child { color: #5b747b; }
+.section-info { margin-top: 8px; color: #5b747b; font: 500 14px 'Roboto', sans-serif; }
+.section-info strong { color: #19313a; }
 button { border: 1px solid #b9cbc6; border-radius: 4px; padding: 8px 12px; background: #fffaf3; color: #19313a; cursor: pointer; font-family: 'Roboto', sans-serif; }
 button:hover { border-color: #d96b45; }
 button:disabled { cursor: wait; opacity: .6; }
@@ -272,5 +258,5 @@ th { background: #edf3f0; }
 .modal label { display: grid; gap: 6px; font: 700 13px 'Roboto', sans-serif; }
 input, select, textarea { box-sizing: border-box; width: 100%; padding: 10px; border: 1px solid #aebfbc; border-radius: 3px; font: 14px 'Roboto', sans-serif; }
 .modal-actions { justify-content: end; }
-@media (max-width: 700px) { .admin-layout { display: block; } .student-page { padding: 24px 16px; overflow-x: auto; } .page-header { align-items: start; flex-direction: column; } }
+@media (max-width: 700px) { .faculty-layout { display: block; } .faculty-student-page { padding: 24px 16px; } .page-header { align-items: start; flex-direction: column; } }
 </style>

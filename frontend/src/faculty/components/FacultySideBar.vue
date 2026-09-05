@@ -6,6 +6,7 @@
       <RouterLink to="/faculty/ojt-company"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V7h16v13M8 7V4h8v3M8 11h2m4 0h2m-8 4h2m4 0h2"/></svg>OJT companies</RouterLink>
       <RouterLink to="/faculty/company-supervisors"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0m3-9v6m-3-3h6"/></svg>Company supervisors</RouterLink>
       <RouterLink to="/faculty/students"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-3-3.87M9 7a4 4 0 1 1 8 0 4 4 0 0 1-8 0z"/></svg>Students</RouterLink>
+      <RouterLink to="/faculty/attendance"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11h8V5l6 7-6 7v-6H3z"/></svg>Attendance</RouterLink>
     </nav>
   </aside>
 </template>
