@@ -42,6 +42,9 @@ class AttendanceLogController extends Controller
 		$studentId = $this->studentScope();
 		$data = $this->validatedLog($studentId === null);
 		$attendance = $this->authorizeAttendance($data['attendance_id'], $studentId);
+		if ($this->logs->existsForAttendanceType($data['attendance_id'], $data['attendance_type'])) {
+			$this->response->error('This attendance type has already been recorded for today', null, 409);
+		}
 		if ($studentId !== null) {
 			$data = $this->applyCurrentSchedule($data, $attendance);
 		}
@@ -63,6 +66,9 @@ class AttendanceLogController extends Controller
 		$studentId = $this->studentScope();
 		$data = $this->validatedLog($studentId === null);
 		$attendance = $this->authorizeAttendance($data['attendance_id'], $studentId);
+		if ($this->logs->existsForAttendanceType($data['attendance_id'], $data['attendance_type'], $logId)) {
+			$this->response->error('This attendance type has already been recorded for today', null, 409);
+		}
 		if ($studentId !== null) {
 			$data = $this->applyCurrentSchedule($data, $attendance);
 		}

@@ -71,6 +71,23 @@ class AttendanceLog extends Model
 		);
 	}
 
+	public function existsForAttendanceType(int $attendanceId, string $attendanceType, ?int $ignoreId = null): bool
+	{
+		$sql = 'SELECT attendance_log_id FROM attendance_log
+				WHERE attendance_id = :attendance_id
+				AND attendance_type = :attendance_type';
+		$params = [
+			':attendance_id' => $attendanceId,
+			':attendance_type' => $attendanceType,
+		];
+		if ($ignoreId !== null) {
+			$sql .= ' AND attendance_log_id <> :attendance_log_id';
+			$params[':attendance_log_id'] = $ignoreId;
+		}
+		$sql .= ' LIMIT 1';
+		return (bool) $this->fetch($sql, $params);
+	}
+
 	public function createLog(array $data): int
 	{
 		$statement = $this->db->prepare(
