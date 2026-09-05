@@ -1,0 +1,9 @@
+@import './AdminBase.css';
+.student-page { flex: 1; min-width: 0; padding: 40px clamp(20px, 4vw, 56px); background: var(--admin-canvas); }
+.modal-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.help-button { width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+.csv-help { padding: 14px; border: 1px solid var(--admin-line); border-radius: 9px; background: #f8faff; font-size: 13px; line-height: 1.5; }
+.csv-help p { margin: 0 0 8px; }
+.csv-help code, .csv-help pre { display: block; overflow-x: auto; margin: 0 0 10px; font: 12px/1.5 monospace; }
+.csv-help ul { margin: 0; padding-left: 18px; }
+@media (max-width: 760px) { .admin-layout { display: block; } .student-page { padding: 28px 16px 92px; overflow-x: auto; } }

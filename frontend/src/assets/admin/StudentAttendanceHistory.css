@@ -1,0 +1,15 @@
+@import './AdminBase.css';
+.history-page { flex: 1; min-width: 0; max-width: 1440px; padding: 40px clamp(20px, 4vw, 56px); background: var(--admin-canvas); }
+.filters { display: flex; align-items: end; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; padding: 18px; border: 1px solid var(--admin-line); border-radius: 14px; background: var(--admin-surface); box-shadow: var(--admin-shadow); }
+.filters label { min-width: 220px; }
+.company-container { margin-bottom: 24px; padding: 22px; border: 1px solid var(--admin-line); border-radius: 14px; background: var(--admin-surface); box-shadow: var(--admin-shadow); }
+.company-container h2 { margin: 0 0 18px; font: 700 20px 'Space Grotesk', sans-serif; }
+.date-container { margin-top: 14px; padding: 18px; border: 1px solid var(--admin-line); border-radius: 10px; background: #fbfcff; }
+.date-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.date-heading div:first-child { display: grid; gap: 4px; }
+.label { color: var(--admin-blue); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.student-name { color: var(--admin-muted); font-size: 13px; }
+.summary { display: flex; gap: 8px; color: var(--admin-muted); font-size: 13px; }
+.summary span { padding: 5px 8px; border: 1px solid var(--admin-line); border-radius: 6px; }
+.empty-state { padding: 16px; border: 1px dashed var(--admin-line); color: var(--admin-muted); }
+@media (max-width: 760px) { .admin-layout { display: block; } .history-page { padding: 28px 16px 92px; } .date-heading, .filters { align-items: flex-start; flex-direction: column; } }

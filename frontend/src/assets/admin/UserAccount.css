@@ -1,0 +1,3 @@
+@import './AdminBase.css';
+.account-page { flex: 1; min-width: 0; padding: 40px clamp(20px, 4vw, 56px); background: var(--admin-canvas); }
+@media (max-width: 760px) { .admin-layout { display: block; } .account-page { padding: 28px 16px 92px; overflow-x: auto; } }
