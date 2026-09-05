@@ -152,6 +152,22 @@
   border-radius: 0.75rem;
 }
 
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 0.5rem;
+  background: var(--color-surface-container-lowest);
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+}
+
+.status-message .material-symbols-outlined { font-size: 18px; }
+.status-message--loading { border-color: var(--color-brand-accent); background: #f0fff6; color: #087653; }
+.status-message--success { border-color: var(--color-brand-accent); background: var(--color-secondary-container); color: #075d41; }
+
 .form-group {
   display: flex;
   flex-direction: column;

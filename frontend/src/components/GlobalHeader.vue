@@ -8,6 +8,7 @@ const router = useRouter()
 const user = ref(null)
 const errorMessage = ref('')
 const isLoggingOut = ref(false)
+const showLogoutConfirmation = ref(false)
 const currentTime = ref(new Date())
 let clockTimer
 
@@ -33,6 +34,7 @@ async function loadSession() {
 }
 
 async function logout() {
+  showLogoutConfirmation.value = false
   isLoggingOut.value = true
   errorMessage.value = ''
 
@@ -40,6 +42,7 @@ async function logout() {
     await api.post('/api/auth/logout')
     sessionStorage.removeItem('user')
     sessionStorage.removeItem('csrfToken')
+    sessionStorage.setItem('authFlash', JSON.stringify({ type: 'success', message: 'You have been logged out successfully.' }))
     await router.push('/login')
   } catch (error) {
     errorMessage.value = error.response?.data?.message || error.message || 'Logout failed.'
@@ -67,9 +70,14 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
         <strong>{{ manilaClock() }}</strong>
       </div>
       <span v-if="user" class="role">{{ user.role }}</span>
-      <button class="logout-button" type="button" :disabled="isLoggingOut" @click="logout">
+      <button class="logout-button" type="button" :disabled="isLoggingOut" @click="showLogoutConfirmation = true">
         {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
       </button>
+    </div>
+    <div v-if="showLogoutConfirmation" class="logout-confirmation" role="alertdialog" aria-label="Confirm logout">
+      <span>Are you sure you want to log out?</span>
+      <button type="button" class="confirm-logout" @click="logout">Confirm</button>
+      <button type="button" class="cancel-logout" @click="showLogoutConfirmation = false">Cancel</button>
     </div>
     <p v-if="errorMessage" class="error" role="alert">{{ errorMessage }}</p>
   </header>
@@ -103,6 +111,10 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
 .role { color: #b04a32 !important; font-weight: 700; text-transform: capitalize; }
 .logout-button { border: 1px solid #83d1a7; border-radius: 8px; padding: 9px 14px; background: #83d1a7; color: #123126; cursor: pointer; font-weight: 700; }
 .logout-button:hover { background: #5fb889; border-color: #5fb889; }
+.logout-confirmation { position: absolute; top: calc(100% + 10px); right: 24px; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid #cfe7da; border-radius: 10px; background: #fff; box-shadow: 0 10px 30px rgb(35 55 86 / 14%); color: #19313a; font-size: 13px; }
+.logout-confirmation button { border-radius: 7px; padding: 7px 10px; font: 700 12px 'Roboto', sans-serif; cursor: pointer; }
+.confirm-logout { border: 1px solid #83d1a7; background: #83d1a7; color: #123126; }
+.cancel-logout { border: 1px solid #cfe7da; background: #dff8ee; color: #087653; }
 button:disabled { cursor: wait; opacity: .6; }
 .error { position: absolute; top: 100%; right: 24px; margin: 0; padding: 8px 12px; background: #fff0ed; color: #a33b2e; }
 @media (max-width: 700px) {
@@ -113,6 +125,7 @@ button:disabled { cursor: wait; opacity: .6; }
   .clock strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
   .role { margin-top: 0 !important; white-space: nowrap; }
   .logout-button { padding: 9px 11px; white-space: nowrap; }
+  .logout-confirmation { right: 16px; left: 16px; flex-wrap: wrap; }
   .error { right: 16px; left: 16px; }
 }
 </style>
