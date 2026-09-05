@@ -80,6 +80,26 @@ onMounted(async () => {
           </div>
         </article>
       </section>
+
+      <section class="dashboard-columns dashboard-lower-row">
+        <article class="dashboard-panel">
+          <div class="panel-heading"><h2>Admin action queue</h2><span>Priority items</span></div>
+          <div class="admin-task-list">
+            <div><span class="task-badge task-badge--urgent">7</span><div><strong>Attendance records awaiting review</strong><small>Assigned to faculty coordinators</small></div><span class="task-date">Today</span></div>
+            <div><span class="task-badge">4</span><div><strong>Company partners awaiting approval</strong><small>Review company profiles and agreements</small></div><span class="task-date">This week</span></div>
+            <div><span class="task-badge">12</span><div><strong>Training agreements nearing renewal</strong><small>Notify supervisors and students</small></div><span class="task-date">Sep 18</span></div>
+          </div>
+        </article>
+
+        <article class="dashboard-panel">
+          <div class="panel-heading"><h2>System snapshot</h2><span>Live summary</span></div>
+          <div class="snapshot-list">
+            <div><span>Faculty coordinators</span><strong>18 active</strong></div>
+            <div><span>Registered supervisors</span><strong>64 total</strong></div>
+            <div><span>Data sync status</span><strong class="snapshot-ok">Up to date</strong></div>
+          </div>
+        </article>
+      </section>
     </main>
   </div>
 </template>
