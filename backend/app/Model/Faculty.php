@@ -40,6 +40,23 @@ class Faculty extends Model
         );
     }
 
+    public function findByUserId(int $userId): ?array
+    {
+        return $this->fetch(
+            'SELECT f.faculty_id, f.user_id, f.section_id, f.firstname, f.middlename,
+                    f.lastname, f.name_ext, f.gender, f.address, f.created_at, f.updated_at,
+                    u.username, u.email, sec.section_name, p.program_name, c.college_name
+             FROM faculty f
+             INNER JOIN users u ON u.user_id = f.user_id
+             LEFT JOIN section sec ON sec.section_id = f.section_id
+             LEFT JOIN program p ON p.program_id = sec.program_id
+             LEFT JOIN college c ON c.college_id = p.college_id
+             WHERE f.user_id = :user_id
+             LIMIT 1',
+            [':user_id' => $userId]
+        );
+    }
+
     public function createProfile(int $userId, array $data): int
     {
         $statement = $this->db->prepare(

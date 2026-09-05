@@ -35,6 +35,13 @@ class FacultyController extends Controller
         $this->json(['success' => true, 'data' => $faculty]);
     }
 
+    public function profile(): void
+    {
+        $userId = $this->authenticatedUserId();
+        $profile = $this->faculty->findByUserId($userId);
+        $this->json(['success' => true, 'data' => $profile]);
+    }
+
     public function store(): void
     {
         $this->requireCsrf();
@@ -167,6 +174,18 @@ class FacultyController extends Controller
             $this->response->badRequest('Invalid faculty ID');
         }
         return (int) $id;
+    }
+
+    private function authenticatedUserId(): int
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $userId = $_SESSION['user']['user_id'] ?? null;
+        if (!is_numeric($userId) || (int) $userId < 1) {
+            $this->response->unauthorized('Authenticated user not found');
+        }
+        return (int) $userId;
     }
 
     private function requireCsrf(): void
