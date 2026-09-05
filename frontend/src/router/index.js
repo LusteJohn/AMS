@@ -10,6 +10,8 @@ import AdminOjtCompany from '../admin/AdminOjtCompany.vue'
 import FacultyDashboard from '../faculty/FacultyDashboard.vue'
 import FacultyStudent from '../faculty/FacultyStudent.vue'
 import FacultyStudentAttendance from '../faculty/FacultyStudentAttendance.vue'
+import FacultyStudentAttendanceHistory from '../faculty/FacultyStudentAttendanceHistory.vue'
+import FacultyProfile from '../faculty/FacultyProfile.vue'
 import StudentDashboard from '../student/StudentDashboard.vue'
 import StudentProfile from '../student/StudentProfile.vue'
 import StudentOjtCompany from '../student/StudentOjtCompany.vue'
@@ -54,8 +56,10 @@ const router = createRouter({
     { path: '/admin/attendance', component: AdminStudentAttendance, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/admin/attendance-history', component: AdminStudentAttendanceHistory, beforeEnter: requireRole('admin'), meta: { requiresAuth: true } },
     { path: '/faculty', component: FacultyDashboard, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
+    { path: '/faculty/profile', component: FacultyProfile, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/faculty/students', component: FacultyStudent, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/faculty/attendance', component: FacultyStudentAttendance, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
+    { path: '/faculty/attendance-history', component: FacultyStudentAttendanceHistory, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/faculty/ojt-company', component: FacultyOjtCompany, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/faculty/company-supervisors', component: FacultyCompanySupervisor, beforeEnter: requireRole('faculty'), meta: { requiresAuth: true } },
     { path: '/student', component: StudentDashboard, beforeEnter: requireRole('student'), meta: { requiresAuth: true } },

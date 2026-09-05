@@ -1,0 +1,23 @@
+@import './FacultyBase.css';
+
+.faculty-profile-page { flex: 1; min-width: 0; max-width: 1100px; padding: 40px clamp(20px, 4vw, 56px); background: var(--faculty-canvas); }
+.profile-view-card, .profile-edit-card { max-width: 900px; border: 1px solid var(--faculty-line); border-radius: 16px; background: var(--faculty-surface); box-shadow: var(--faculty-shadow); }
+.profile-view-card { padding: 28px; }
+.profile-identity { display: flex; align-items: center; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid var(--faculty-line); }
+.profile-avatar { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 18px; background: var(--faculty-mint); color: #123126; font: 700 28px 'Space Grotesk', sans-serif; }
+.profile-identity h2 { margin: 0; font: 700 24px 'Space Grotesk', sans-serif; }
+.profile-identity p { margin: 5px 0 8px; color: var(--faculty-muted); }
+.profile-role { display: inline-flex; padding: 5px 9px; border-radius: 999px; background: var(--faculty-mint-soft); color: var(--faculty-mint-ink); font-size: 11px; font-weight: 700; }
+.profile-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding-top: 24px; }
+.profile-details div { display: grid; gap: 6px; }
+.profile-details span { color: var(--faculty-muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.profile-details strong { font-size: 14px; }
+.profile-detail-wide { grid-column: 1 / -1; }
+.profile-edit-card { padding: 28px; }
+.profile-card-heading { margin-bottom: 22px; }
+.profile-card-heading h2 { margin: 0; font: 700 20px 'Space Grotesk', sans-serif; }
+.profile-card-heading p { margin: 6px 0 0; color: var(--faculty-muted); font-size: 13px; }
+.profile-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.profile-form-grid label { display: grid; gap: 7px; }
+.profile-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
+@media (max-width: 760px) { .faculty-layout { display: block; } .faculty-profile-page { padding: 28px 16px 92px; } .profile-form-grid, .profile-details { grid-template-columns: 1fr; } .profile-detail-wide { grid-column: auto; } .profile-view-card, .profile-edit-card { padding: 20px; } .profile-actions { flex-direction: column-reverse; } .profile-actions button { width: 100%; } }

@@ -4,4 +4,17 @@
 .profile-form label { display: grid; gap: 7px; }
 .full-width { grid-column: 1 / -1; }
 .profile-form button { width: fit-content; }
-@media (max-width: 760px) { .student-layout { display: block; } .profile-page { padding: 28px 16px 92px; } .profile-form { grid-template-columns: 1fr; } .full-width { grid-column: auto; } }
+.profile-view-card, .profile-form { border: 1px solid var(--student-line); border-radius: 16px; background: var(--student-surface); box-shadow: var(--student-shadow); }
+.profile-view-card { max-width: 900px; padding: 28px; }
+.profile-identity { display: flex; align-items: center; gap: 16px; padding-bottom: 24px; border-bottom: 1px solid var(--student-line); }
+.profile-avatar { display: grid; place-items: center; width: 68px; height: 68px; border-radius: 18px; background: var(--student-mint); color: #123126; font: 700 28px 'Space Grotesk', sans-serif; }
+.profile-identity h2 { margin: 0; font: 700 24px 'Space Grotesk', sans-serif; }
+.profile-identity p { margin: 5px 0 8px; color: var(--student-muted); }
+.profile-role { display: inline-flex; padding: 5px 9px; border-radius: 999px; background: var(--student-mint-soft); color: var(--student-mint-ink); font-size: 11px; font-weight: 700; }
+.profile-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding-top: 24px; }
+.profile-details div { display: grid; gap: 6px; }
+.profile-details span { color: var(--student-muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.profile-details strong { font-size: 14px; }
+.profile-detail-wide { grid-column: 1 / -1; }
+.profile-actions { display: flex; justify-content: flex-end; gap: 8px; grid-column: 1 / -1; }
+@media (max-width: 760px) { .student-layout { display: block; } .profile-page { padding: 28px 16px 92px; } .profile-form { grid-template-columns: 1fr; } .profile-details { grid-template-columns: 1fr; } .full-width, .profile-detail-wide, .profile-actions { grid-column: auto; } .profile-view-card { padding: 20px; } .profile-actions { flex-direction: column-reverse; } .profile-actions button { width: 100%; } }

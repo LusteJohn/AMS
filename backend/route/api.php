@@ -89,6 +89,7 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/faculty/profile', [FacultyController::class, 'profile']);
+    $router->put('/faculty/profile', [FacultyController::class, 'updateProfile']);
 }, [FacultyMiddleware::class . '::requireFaculty']);
 
 $canManageStudents = function (): void {
