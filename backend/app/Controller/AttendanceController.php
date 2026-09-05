@@ -39,6 +39,9 @@ class AttendanceController extends Controller
 		$studentId = $this->studentScope();
 		$data = $this->validatedAttendance();
 		$this->authorizeAssignment($data['student_company_id'], $studentId);
+		if ($this->attendance->existsForAssignmentDate($data['student_company_id'], $data['attendance_date'])) {
+			$this->response->error('You can only add one attendance record per day', null, 409);
+		}
 		try {
 			$attendanceId = $this->attendance->createAttendance($data);
 		} catch (PDOException $exception) {
@@ -58,6 +61,9 @@ class AttendanceController extends Controller
 		$this->authorizeRecord($current);
 		$data = $this->validatedAttendance();
 		$this->authorizeAssignment($data['student_company_id'], $this->studentScope());
+		if ($this->attendance->existsForAssignmentDate($data['student_company_id'], $data['attendance_date'], $attendanceId)) {
+			$this->response->error('You can only add one attendance record per day', null, 409);
+		}
 		try {
 			$this->attendance->updateAttendance($attendanceId, $data);
 		} catch (PDOException $exception) {

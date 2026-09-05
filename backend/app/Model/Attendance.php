@@ -58,6 +58,23 @@ class Attendance extends Model
 		);
 	}
 
+	public function existsForAssignmentDate(int $studentCompanyId, string $attendanceDate, ?int $ignoreId = null): bool
+	{
+		$sql = 'SELECT attendance_id FROM attendance
+				WHERE student_company_id = :student_company_id
+				AND attendance_date = :attendance_date';
+		$params = [
+			':student_company_id' => $studentCompanyId,
+			':attendance_date' => $attendanceDate,
+		];
+		if ($ignoreId !== null) {
+			$sql .= ' AND attendance_id <> :attendance_id';
+			$params[':attendance_id'] = $ignoreId;
+		}
+		$sql .= ' LIMIT 1';
+		return (bool) $this->fetch($sql, $params);
+	}
+
 	public function createAttendance(array $data): int
 	{
 		$statement = $this->db->prepare(
