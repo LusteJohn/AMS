@@ -81,6 +81,18 @@ function manilaClock() {
   }).format(manilaNow.value)
 }
 
+function formatTime12(value) {
+  if (!value) return '-'
+  const [hours, minutes] = String(value).split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return value
+  const date = new Date(2000, 0, 1, hours, minutes)
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date)
+}
+
 function earlyAttendanceMessage(item, attendanceType) {
   const schedule = scheduleForAttendance(item)
   if (!schedule) return 'No attendance schedule has been configured for this company.'
@@ -233,7 +245,7 @@ onBeforeUnmount(() => {
                 <td>{{ item.attendance_date }}</td><td>{{ item.company_name }}</td><td>{{ item.total_hours }}</td><td>{{ item.status }}</td>
                 <td class="row-actions"><button type="button" class="expand-button" :aria-expanded="expandedAttendanceId === item.attendance_id" @click="toggleAttendanceDetails(item)"><span class="arrow" :class="{ 'arrow-up': expandedAttendanceId === item.attendance_id }" aria-hidden="true"></span></button><button type="button" @click="openAttendanceEdit(item)">Edit</button><button type="button" @click="deleteAttendance(item)">Delete</button><button type="button" @click="openLogForm(item)">Add log</button></td>
               </tr>
-              <tr v-if="expandedAttendanceId === item.attendance_id" class="details-row"><td colspan="5"><p v-if="isDetailsLoading">Loading attendance logs...</p><div v-else-if="attendanceDetails[item.attendance_id]?.logs.length" class="details-content"><h3>Attendance logs</h3><table class="nested-table"><thead><tr><th>Type</th><th>Time</th><th>Status</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td>{{ log.status }}</td></tr></tbody></table></div><p v-else>No attendance logs found.</p></td></tr>
+              <tr v-if="expandedAttendanceId === item.attendance_id" class="details-row"><td colspan="5"><p v-if="isDetailsLoading">Loading attendance logs...</p><div v-else-if="attendanceDetails[item.attendance_id]?.logs.length" class="details-content"><h3>Attendance logs</h3><table class="nested-table"><thead><tr><th>Type</th><th>Time</th><th>Status</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ formatTime12(log.attendance_time) }}</td><td>{{ log.status }}</td></tr></tbody></table></div><p v-else>No attendance logs found.</p></td></tr>
             </template>
             <tr v-if="!attendance.length"><td colspan="5">No attendance records found.</td></tr>
           </tbody>
@@ -243,7 +255,7 @@ onBeforeUnmount(() => {
 
     <div v-if="attendanceForm" class="modal-backdrop" @click.self="closeAttendanceForm"><form class="modal" @submit.prevent="saveAttendance"><h2>{{ attendanceFormTitle }}</h2><label>OJT company<select v-model="attendanceForm.student_company_id" required><option disabled value="">Select company assignment</option><option v-for="assignment in assignments" :key="assignment.student_company_id" :value="assignment.student_company_id">{{ assignment.company_name }} ({{ assignment.ojt_start_date }} to {{ assignment.ojt_end_date }})</option></select></label><label>Attendance date<input v-model="attendanceForm.attendance_date" type="date" required /></label><label>Total hours<input v-model.number="attendanceForm.total_hours" type="number" min="0" max="999.99" step="0.01" required /></label><label>Status<select v-model="attendanceForm.status" required><option value="pending">Pending</option><option value="present">Present</option><option value="absent">Absent</option><option value="late">Late</option><option value="leave">Leave</option></select></label><div class="modal-actions"><button type="button" :disabled="isSaving" @click="closeAttendanceForm">Cancel</button><button type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : 'Save attendance' }}</button></div></form></div>
 
-    <div v-if="logForm" class="modal-backdrop" @click.self="closeLogForm"><form class="modal" @submit.prevent="saveLog"><h2>Add attendance log</h2><p class="context">{{ logForm.attendance.company_name }} · {{ logForm.attendance.attendance_date }}</p><label>Attendance type<select v-model="logForm.attendance_type" required><option value="morning_in">Morning in</option><option value="morning_out">Morning out</option><option value="afternoon_in">Afternoon in</option><option value="afternoon_out">Afternoon out</option></select></label><div v-if="scheduleForAttendance(logForm.attendance)" class="schedule-context"><strong>Company schedule</strong><span>Morning: {{ scheduleForAttendance(logForm.attendance).morning_in }} - {{ scheduleForAttendance(logForm.attendance).morning_out }}</span><span>Afternoon: {{ scheduleForAttendance(logForm.attendance).afternoon_in }} - {{ scheduleForAttendance(logForm.attendance).afternoon_out }}</span><span>Grace period: {{ scheduleForAttendance(logForm.attendance).grace_period_minutes }} minutes</span></div><p class="current-time">Recorded time: <strong>{{ manilaClock() }}</strong><br /><small>Status is calculated from the company schedule.</small></p><div class="modal-actions"><button type="button" :disabled="isSaving" @click="closeLogForm">Cancel</button><button type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : 'Save log' }}</button></div></form></div>
+    <div v-if="logForm" class="modal-backdrop" @click.self="closeLogForm"><form class="modal" @submit.prevent="saveLog"><h2>Add attendance log</h2><p class="context">{{ logForm.attendance.company_name }} · {{ logForm.attendance.attendance_date }}</p><label>Attendance type<select v-model="logForm.attendance_type" required><option value="morning_in">Morning in</option><option value="morning_out">Morning out</option><option value="afternoon_in">Afternoon in</option><option value="afternoon_out">Afternoon out</option></select></label><div v-if="scheduleForAttendance(logForm.attendance)" class="schedule-context"><strong>Company schedule</strong><span>Morning: {{ formatTime12(scheduleForAttendance(logForm.attendance).morning_in) }} - {{ formatTime12(scheduleForAttendance(logForm.attendance).morning_out) }}</span><span>Afternoon: {{ formatTime12(scheduleForAttendance(logForm.attendance).afternoon_in) }} - {{ formatTime12(scheduleForAttendance(logForm.attendance).afternoon_out) }}</span><span>Grace period: {{ scheduleForAttendance(logForm.attendance).grace_period_minutes }} minutes</span></div><p class="current-time">Recorded time: <strong>{{ manilaClock() }}</strong><br /><small>Status is calculated from the company schedule.</small></p><div class="modal-actions"><button type="button" :disabled="isSaving" @click="closeLogForm">Cancel</button><button type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : 'Save log' }}</button></div></form></div>
   </div>
 </template>
 
