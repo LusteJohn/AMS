@@ -24,4 +24,12 @@ body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
 }
+
+@media (max-width: 700px) {
+  body:has(.admin-sidebar),
+  body:has(.faculty-sidebar),
+  body:has(.student-sidebar) {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+}
 </style>
