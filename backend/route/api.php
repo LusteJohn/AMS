@@ -25,6 +25,7 @@ use App\Controller\AttendanceEvidenceController;
 use App\Controller\AttendanceLogController;
 use App\Controller\AttendanceCompanyScheduleController;
 use App\Middleware\AdminMiddleware;
+use App\Middleware\FacultyMiddleware;
 use App\Middleware\StudentMiddleware;
 
 $router = new Router();
@@ -87,10 +88,25 @@ $router->groupWithMiddleware('/api', function (Router $router) {
 }, [StudentMiddleware::class . '::requireStudent']);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
+    $router->get('/faculty/profile', [FacultyController::class, 'profile']);
+}, [FacultyMiddleware::class . '::requireFaculty']);
+
+$canManageStudents = function (): void {
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $role = strtolower(trim((string) ($_SESSION['user']['role'] ?? '')));
+    if (!in_array($role, ['admin', 'faculty'], true)) {
+        (new \App\Core\Response())->unauthorized('Admin or faculty access required');
+    }
+};
+
+$router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/students', [StudentController::class, 'index']);
     $router->post('/students', [StudentController::class, 'adminStore']);
     $router->post('/students/import', [StudentController::class, 'importCsv']);
-}, [AdminMiddleware::class . '::requireAdmin']);
+}, [$canManageStudents]);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->get('/faculty', [FacultyController::class, 'index']);
