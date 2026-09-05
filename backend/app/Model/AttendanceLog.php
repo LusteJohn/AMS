@@ -88,6 +88,50 @@ class AttendanceLog extends Model
 		return (bool) $this->fetch($sql, $params);
 	}
 
+	public function calculateTotalHours(int $attendanceId): float
+	{
+		$logs = $this->fetchAll(
+			'SELECT attendance_type, attendance_time
+			 FROM attendance_log
+			 WHERE attendance_id = :attendance_id',
+			[':attendance_id' => $attendanceId]
+		);
+		$times = [];
+		foreach ($logs as $log) {
+			$times[$log['attendance_type']] = $log['attendance_time'];
+		}
+
+		$totalSeconds = 0;
+		foreach ([['morning_in', 'morning_out'], ['afternoon_in', 'afternoon_out']] as [$start, $end]) {
+			if (!isset($times[$start], $times[$end])) continue;
+			$startTime = strtotime($times[$start]);
+			$endTime = strtotime($times[$end]);
+			if ($startTime !== false && $endTime !== false && $endTime > $startTime) {
+				$totalSeconds += $endTime - $startTime;
+			}
+		}
+		return round($totalSeconds / 3600, 2);
+	}
+
+	public function updateAttendanceTotalHours(int $attendanceId, float $totalHours): int
+	{
+		$statement = $this->db->prepare(
+			'UPDATE attendance SET total_hours = :total_hours
+			 WHERE attendance_id = :attendance_id'
+		);
+		$statement->bindValue(':total_hours', number_format($totalHours, 2, '.', ''), PDO::PARAM_STR);
+		$statement->bindValue(':attendance_id', $attendanceId, PDO::PARAM_INT);
+		$statement->execute();
+		return $statement->rowCount();
+	}
+
+	public function recalculateAttendanceTotalHours(int $attendanceId): float
+	{
+		$totalHours = $this->calculateTotalHours($attendanceId);
+		$this->updateAttendanceTotalHours($attendanceId, $totalHours);
+		return $totalHours;
+	}
+
 	public function createLog(array $data): int
 	{
 		$statement = $this->db->prepare(

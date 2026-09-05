@@ -186,9 +186,14 @@ async function saveLog() {
       attendance_id: logForm.value.attendance.attendance_id,
       attendance_type: logForm.value.attendance_type,
     })
+    const attendanceId = logForm.value.attendance.attendance_id
     logForm.value = null
+    delete attendanceDetails.value[attendanceId]
+    expandedAttendanceId.value = null
     showMessage('success', 'Attendance log saved successfully.')
     await loadData()
+    const savedAttendance = attendance.value.find((item) => item.attendance_id === attendanceId)
+    if (savedAttendance) await toggleAttendanceDetails(savedAttendance)
   } catch (error) {
     showMessage('error', apiError(error))
   } finally {

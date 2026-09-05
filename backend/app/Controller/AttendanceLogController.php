@@ -50,6 +50,7 @@ class AttendanceLogController extends Controller
 		}
 		try {
 			$logId = $this->logs->createLog($data);
+			$this->logs->recalculateAttendanceTotalHours($data['attendance_id']);
 		} catch (PDOException $exception) {
 			if ((int) ($exception->errorInfo[1] ?? 0) === 1062) $this->response->error('This attendance type already exists', null, 409);
 			$this->response->serverError('Unable to create attendance log');
@@ -74,6 +75,10 @@ class AttendanceLogController extends Controller
 		}
 		try {
 			$this->logs->updateLog($logId, $data);
+			if ((int) $current['attendance_id'] !== (int) $data['attendance_id']) {
+				$this->logs->recalculateAttendanceTotalHours((int) $current['attendance_id']);
+			}
+			$this->logs->recalculateAttendanceTotalHours($data['attendance_id']);
 		} catch (PDOException $exception) {
 			if ((int) ($exception->errorInfo[1] ?? 0) === 1062) $this->response->error('This attendance type already exists', null, 409);
 			$this->response->serverError('Unable to update attendance log');
@@ -88,6 +93,7 @@ class AttendanceLogController extends Controller
 		$log = $this->logs->find($logId);
 		$this->authorizeLog($log);
 		if ($this->logs->deleteLog($logId) === 0) $this->response->notFound('Attendance log not found');
+		$this->logs->recalculateAttendanceTotalHours((int) $log['attendance_id']);
 		$this->response->deleted('Attendance log deleted successfully');
 	}
 
