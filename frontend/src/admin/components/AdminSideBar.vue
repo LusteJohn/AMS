@@ -15,6 +15,10 @@
   </aside>
 </template>
 
+<script setup>
+import '../../assets/admin/AdminSideBar.css'
+</script>
+
 <style scoped>
 .admin-sidebar {
   position: sticky;

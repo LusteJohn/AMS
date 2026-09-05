@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import api from '../api/axios'
 import AdminSideBar from './components/AdminSideBar.vue'
+import '../assets/admin/AdminOjtCompany.css'
 
 const companies = ref([])
 const isLoading = ref(false)

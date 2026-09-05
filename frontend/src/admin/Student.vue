@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 
 import api from '../api/axios'
 import AdminSideBar from './components/AdminSideBar.vue'
+import '../assets/admin/Student.css'
 
 const students = ref([])
 const sections = ref([])
