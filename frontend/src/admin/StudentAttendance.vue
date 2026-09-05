@@ -36,16 +36,20 @@ function apiError(error) {
 	return error.response?.data?.message || error.message || 'Request failed.'
 }
 
+function formatTime12(value) {
+	if (!value) return '-'
+	const [hours, minutes] = String(value).split(':').map(Number)
+	if (Number.isNaN(hours) || Number.isNaN(minutes)) return value
+	const date = new Date(2000, 0, 1, hours, minutes)
+	return new Intl.DateTimeFormat('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		hour12: true,
+	}).format(date)
+}
+
 function clearCompanyFilter() {
 	filters.value.attendance_date = ''
-}
-
-function evidenceUrl(path) {
-	return `${api.defaults.baseURL.replace(/\/$/, '')}/${path}`
-}
-
-function evidenceForLog(attendanceId, logId) {
-	return attendanceDetails.value[attendanceId]?.evidence.find((item) => item.attendance_log_id === logId) || null
 }
 
 async function toggleDetails(item) {
@@ -60,9 +64,7 @@ async function toggleDetails(item) {
 	try {
 		const response = await api.get('/api/attendance-logs', { params: { attendance_id: item.attendance_id } })
 		const logs = Array.isArray(response.data?.data) ? response.data.data : []
-		const evidenceResponses = await Promise.all(logs.map((log) => api.get('/api/attendance-evidence', { params: { attendance_log_id: log.attendance_log_id } })))
-		const evidence = evidenceResponses.flatMap((result) => Array.isArray(result.data?.data) ? result.data.data : [])
-		attendanceDetails.value[item.attendance_id] = { logs, evidence }
+		attendanceDetails.value[item.attendance_id] = { logs }
 	} catch (error) {
 		expandedAttendanceId.value = null
 		showError(apiError(error))
@@ -95,7 +97,7 @@ onMounted(loadData)
 		<AdminSideBar />
 		<main class="attendance-page">
 			<header class="page-header">
-				<div><p class="eyebrow">Administration</p><h1>Student attendance</h1><p>Review attendance records, time logs, and selfie evidence.</p></div>
+				<div><p class="eyebrow">Administration</p><h1>Student attendance</h1><p>Review attendance records and time logs.</p></div>
 				<button type="button" :disabled="isLoading" @click="loadData">Refresh</button>
 			</header>
 
@@ -124,12 +126,12 @@ onMounted(loadData)
 							</tr>
 							<tr v-if="expandedAttendanceId === item.attendance_id" class="details-row">
 								<td colspan="7">
-									<p v-if="isDetailsLoading">Loading logs and evidence...</p>
+									<p v-if="isDetailsLoading">Loading attendance logs...</p>
 									<div v-else-if="attendanceDetails[item.attendance_id]?.logs.length" class="details-content">
-										<h2>Attendance logs and evidence</h2>
-										<table class="nested-table"><thead><tr><th>Attendance type</th><th>Time</th><th>Status</th><th>Evidence</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ log.attendance_time }}</td><td>{{ log.status }}</td><td><a v-if="evidenceForLog(item.attendance_id, log.attendance_log_id)" :href="evidenceUrl(evidenceForLog(item.attendance_id, log.attendance_log_id).image_path)" target="_blank" rel="noopener">View selfie</a><span v-else>No selfie</span></td></tr></tbody></table>
+										<h2>Attendance logs</h2>
+										<table class="nested-table"><thead><tr><th>Attendance type</th><th>Time</th><th>Status</th></tr></thead><tbody><tr v-for="log in attendanceDetails[item.attendance_id].logs" :key="log.attendance_log_id"><td>{{ log.attendance_type }}</td><td>{{ formatTime12(log.attendance_time) }}</td><td>{{ log.status }}</td></tr></tbody></table>
 									</div>
-									<p v-else>No attendance logs or evidence found.</p>
+									<p v-else>No attendance logs found.</p>
 								</td>
 							</tr>
 						</template>
