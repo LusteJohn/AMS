@@ -11,7 +11,22 @@ const login = ref('')
 const password = ref('')
 const isPasswordVisible = ref(false)
 const errorMessage = ref('')
+const statusMessage = ref('')
+const statusType = ref('loading')
 const isSubmitting = ref(false)
+
+function consumeFlashMessage() {
+  const flash = sessionStorage.getItem('authFlash')
+  if (!flash) return
+  sessionStorage.removeItem('authFlash')
+  try {
+    const parsed = JSON.parse(flash)
+    statusType.value = parsed.type || 'success'
+    statusMessage.value = parsed.message || ''
+  } catch {
+    statusMessage.value = ''
+  }
+}
 
 function dashboardForRole(role) {
   const normalizedRole = String(role || '').trim().toLowerCase()
@@ -25,6 +40,8 @@ function dashboardForRole(role) {
 
 async function submitLogin() {
   errorMessage.value = ''
+  statusMessage.value = 'Checking your credentials...'
+  statusType.value = 'loading'
   isSubmitting.value = true
 
   try {
@@ -41,13 +58,20 @@ async function submitLogin() {
     }
 
     sessionStorage.setItem('user', JSON.stringify(user))
+    statusMessage.value = 'Login successful. Redirecting to your dashboard...'
+    statusType.value = 'success'
+    sessionStorage.setItem('authFlash', JSON.stringify({ type: 'success', message: 'Login successful.' }))
+    await new Promise((resolve) => window.setTimeout(resolve, 700))
     await router.push(dashboard)
   } catch (error) {
     errorMessage.value = error.response?.data?.message || error.message || 'Login failed.'
+    statusMessage.value = ''
   } finally {
     isSubmitting.value = false
   }
 }
+
+consumeFlashMessage()
 </script>
 
 <template>
@@ -63,6 +87,10 @@ async function submitLogin() {
         </div>
 
         <form class="login-form" @submit.prevent="submitLogin">
+          <p v-if="statusMessage" class="status-message" :class="`status-message--${statusType}`" role="status" aria-live="polite">
+            <span class="material-symbols-outlined">{{ statusType === 'loading' ? 'hourglass_empty' : 'check_circle' }}</span>
+            {{ statusMessage }}
+          </p>
           <div class="form-group">
             <label class="form-label" for="institutional-id">Institutional ID or University Email</label>
             <span class="form-helper">Format: 23-1082 or example@gmail.com</span>
