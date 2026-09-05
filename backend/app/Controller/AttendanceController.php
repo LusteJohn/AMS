@@ -22,7 +22,9 @@ class AttendanceController extends Controller
 
 	public function index(): void
 	{
-		$this->json(['success' => true, 'data' => $this->attendance->all($this->studentScope())]);
+		$sectionId = filter_var($this->query('section_id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+		$sectionId = $sectionId === false ? null : (int) $sectionId;
+		$this->json(['success' => true, 'data' => $this->attendance->all($this->studentScope(), $sectionId)]);
 	}
 
 	public function show(string $id): void

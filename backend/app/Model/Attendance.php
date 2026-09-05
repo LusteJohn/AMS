@@ -9,22 +9,31 @@ class Attendance extends Model
 {
 	protected string $table = 'attendance';
 
-	public function all(?int $studentId = null): array
+	public function all(?int $studentId = null, ?int $sectionId = null): array
 	{
 		$sql = 'SELECT a.attendance_id, a.student_company_id,
 					   a.attendance_date,
 					   a.total_hours, a.status, a.created_at, a.updated_at,
 					   osc.student_id, osc.company_id, c.company_name,
-					   s.school_id, s.firstname, s.middlename, s.lastname
+					   s.school_id, s.firstname, s.middlename, s.lastname,
+					   s.section_id
 				FROM attendance a
 				INNER JOIN ojt_student_company osc
 					ON osc.student_company_id = a.student_company_id
 				INNER JOIN ojt_company c ON c.company_id = osc.company_id
 				INNER JOIN student s ON s.student_id = osc.student_id';
+		$conditions = [];
 		$params = [];
 		if ($studentId !== null) {
-			$sql .= ' WHERE osc.student_id = :student_id';
+			$conditions[] = 'osc.student_id = :student_id';
 			$params[':student_id'] = $studentId;
+		}
+		if ($sectionId !== null) {
+			$conditions[] = 's.section_id = :section_id';
+			$params[':section_id'] = $sectionId;
+		}
+		if ($conditions) {
+			$sql .= ' WHERE ' . implode(' AND ', $conditions);
 		}
 		$sql .= ' ORDER BY a.attendance_date DESC, a.created_at DESC';
 		return $this->fetchAll($sql, $params);
