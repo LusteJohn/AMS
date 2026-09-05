@@ -146,13 +146,14 @@ $router->groupWithMiddleware('/api', function (Router $router) {
     $router->delete('/attendance-logs/{id}', [AttendanceLogController::class, 'destroy']);
 }, [$canManageCompanies]);
 
-$router->groupWithMiddleware('/api', function (Router $router) {
-    $router->get('/attendance-evidence', [AttendanceEvidenceController::class, 'index']);
-    $router->get('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'show']);
-    $router->post('/attendance-evidence', [AttendanceEvidenceController::class, 'store']);
-    $router->put('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'update']);
-    $router->delete('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'destroy']);
-}, [$canManageCompanies]);
+// Attendance evidence routes are reserved for a future selfie/evidence workflow.
+// $router->groupWithMiddleware('/api', function (Router $router) {
+//     $router->get('/attendance-evidence', [AttendanceEvidenceController::class, 'index']);
+//     $router->get('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'show']);
+//     $router->post('/attendance-evidence', [AttendanceEvidenceController::class, 'store']);
+//     $router->put('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'update']);
+//     $router->delete('/attendance-evidence/{id}', [AttendanceEvidenceController::class, 'destroy']);
+// }, [$canManageCompanies]);
 
 $router->groupWithMiddleware('/api', function (Router $router) {
     $router->post('/company-schedules', [AttendanceCompanyScheduleController::class, 'store']);
