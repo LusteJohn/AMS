@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 
 import api from '../api/axios'
 import StudentSideBar from './components/StudentSideBar.vue'
+import '../assets/student/StudentCompanyAttendance.css'
 
 const assignments = ref([])
 const schedules = ref([])

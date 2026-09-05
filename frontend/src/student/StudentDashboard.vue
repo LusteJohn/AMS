@@ -1,6 +1,7 @@
 <script setup>
 import Dashboard from '../components/Dashboard.vue'
 import StudentSideBar from './components/StudentSideBar.vue'
+import '../assets/student/StudentDashboard.css'
 </script>
 
 <template>

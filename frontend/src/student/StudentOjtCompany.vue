@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import api from '../api/axios'
 import StudentSideBar from './components/StudentSideBar.vue'
+import '../assets/student/StudentOjtCompany.css'
 
 const companies = ref([])
 const isLoading = ref(false)

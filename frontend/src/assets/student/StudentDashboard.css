@@ -1,0 +1,5 @@
+@import './StudentBase.css';
+.student-layout > main { flex: 1; min-width: 0; padding: 40px clamp(20px, 4vw, 56px); background: var(--student-canvas); }
+.student-layout > main h1 { margin: 0 0 14px; font: 700 clamp(28px, 3vw, 42px)/1.05 'Space Grotesk', sans-serif; }
+.student-layout > main p { color: var(--student-muted); }
+@media (max-width: 760px) { .student-layout { display: block; } .student-layout > main { padding: 28px 16px 92px; } }

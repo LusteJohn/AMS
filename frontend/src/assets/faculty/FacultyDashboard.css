@@ -1,0 +1,5 @@
+@import './FacultyBase.css';
+.faculty-layout > main { flex: 1; min-width: 0; padding: 40px clamp(20px, 4vw, 56px); background: var(--faculty-canvas); }
+.faculty-layout > main h1 { margin: 0 0 14px; font: 700 clamp(28px, 3vw, 42px)/1.05 'Space Grotesk', sans-serif; }
+.faculty-layout > main p { color: var(--faculty-muted); }
+@media (max-width: 760px) { .faculty-layout { display: block; } .faculty-layout > main { padding: 28px 16px 92px; } }

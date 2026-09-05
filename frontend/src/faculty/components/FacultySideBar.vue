@@ -11,6 +11,10 @@
   </aside>
 </template>
 
+<script setup>
+import '../../assets/faculty/FacultySideBar.css'
+</script>
+
 <style scoped>
 .faculty-sidebar {
   position: sticky;

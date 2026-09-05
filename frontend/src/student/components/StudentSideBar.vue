@@ -14,6 +14,10 @@
   </aside>
 </template>
 
+<script setup>
+import '../../assets/student/StudentSideBar.css'
+</script>
+
 <style scoped>
 .student-sidebar { position: sticky; top: 61px; align-self: flex-start; min-width: 180px; min-height: calc(100vh - 61px); padding: 24px; border-right: 1px solid #d9e2df; background: #fffaf3; }
 .student-sidebar h2 { margin: 0 0 20px; }

@@ -1,0 +1,8 @@
+@import './FacultyBase.css';
+.faculty-student-page { flex: 1; min-width: 0; max-width: 1440px; padding: 40px clamp(20px, 4vw, 56px); background: var(--faculty-canvas); }
+.section-info { margin-top: 8px; color: var(--faculty-muted); font-size: 14px; }
+.faculty-student-page > table { overflow: auto; border: 1px solid var(--faculty-line); border-radius: 12px; background: var(--faculty-surface); box-shadow: var(--faculty-shadow); }
+.modal-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.help-button { width: 30px; height: 30px; padding: 0; border-radius: 50%; }
+.csv-help { padding: 14px; border: 1px solid var(--faculty-line); border-radius: 9px; background: #f8fdf9; font-size: 13px; line-height: 1.5; }
+@media (max-width: 760px) { .faculty-layout { display: block; } .faculty-student-page { padding: 28px 16px 92px; overflow-x: auto; } }
