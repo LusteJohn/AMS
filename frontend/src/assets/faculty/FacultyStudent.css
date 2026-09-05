@@ -5,4 +5,4 @@
 .modal-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .help-button { width: 30px; height: 30px; padding: 0; border-radius: 50%; }
 .csv-help { padding: 14px; border: 1px solid var(--faculty-line); border-radius: 9px; background: #f8fdf9; font-size: 13px; line-height: 1.5; }
-@media (max-width: 760px) { .faculty-layout { display: block; } .faculty-student-page { padding: 28px 16px 92px; overflow-x: auto; } }
+@media (max-width: 760px) { .faculty-layout { display: block; } .faculty-student-page { padding: 28px 16px 92px; overflow-x: hidden; } }

@@ -14,6 +14,7 @@
 }
 
 .faculty-layout { min-height: 100vh; color: var(--faculty-ink); background: var(--faculty-canvas); }
+.faculty-layout > main, .layout > main { min-width: 0; margin-left: 236px; overflow-x: hidden; }
 .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
 .page-header h1, .page-header h2, .modal h2 { margin: 0; font-family: 'Space Grotesk', sans-serif; letter-spacing: -.03em; }
 .page-header h1 { font-size: clamp(28px, 3vw, 42px); line-height: 1.05; }
@@ -24,9 +25,11 @@ button { border: 1px solid var(--faculty-mint) !important; border-radius: 8px; p
 button:hover { border-color: var(--faculty-mint-dark) !important; background: #c9f0dc !important; color: #075d41 !important; transform: translateY(-1px); }
 button:disabled { cursor: wait; opacity: .55; transform: none; }
 .header-actions button:last-child, .modal-actions button:last-child { background: var(--faculty-mint) !important; color: #123126 !important; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table { display: block; width: 100%; max-width: 100%; overflow-x: auto; border-collapse: collapse; font-size: 14px; }
+table > thead, table > tbody { display: table; width: max-content; min-width: 100%; }
 th, td { padding: 15px 16px; border-bottom: 1px solid var(--faculty-line); text-align: left; vertical-align: top; }
-th { background: #f8fdf9; color: var(--faculty-muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+th { position: sticky; top: 0; z-index: 2; background: #f8fdf9; color: var(--faculty-muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+button { flex-shrink: 0; }
 tbody tr:hover { background: #fbfffc; }
 input, select, textarea { box-sizing: border-box; width: 100%; border: 1px solid #c9d4e2; border-radius: 8px; padding: 11px 12px; background: #fbfcfe; color: var(--faculty-ink); font: 14px 'DM Sans', sans-serif; }
 input:focus, select:focus, textarea:focus { outline: 3px solid rgb(131 209 167 / 22%); border-color: var(--faculty-mint-dark); }
@@ -38,4 +41,5 @@ input:focus, select:focus, textarea:focus { outline: 3px solid rgb(131 209 167 /
 .modal { width: min(560px, 100%); max-height: 90vh; overflow-y: auto; display: grid; gap: 15px; padding: 28px; border: 1px solid var(--faculty-line); border-radius: 16px; background: var(--faculty-surface); box-shadow: 0 24px 70px rgb(16 31 54 / 22%); }
 .modal label, .filters label { display: grid; gap: 7px; color: var(--faculty-ink); font-size: 12px; font-weight: 700; }
 small, .modal-help { color: var(--faculty-muted); font-size: 12px; }
-@media (max-width: 760px) { .page-header { align-items: flex-start; flex-direction: column; } .header-actions { width: 100%; } .header-actions button { flex: 1; } th, td { padding: 12px; } }
+@media (max-width: 760px) { .faculty-layout { padding-bottom: calc(92px + env(safe-area-inset-bottom)); } .faculty-layout > main, .layout > main { margin-left: 0; overflow-x: hidden; } .page-header { align-items: flex-start; flex-direction: column; } .header-actions { width: 100%; } .header-actions button { flex: 1; } th, td { padding: 12px; } }
+@media (min-width: 761px) { .faculty-layout > main, .layout > main { padding-left: 20px !important; } }

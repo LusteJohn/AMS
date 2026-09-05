@@ -2,4 +2,4 @@
 .company-page { flex: 1; min-width: 0; max-width: 1440px; padding: 40px clamp(20px, 4vw, 56px); background: var(--student-canvas); }
 .company-page > table { overflow: auto; border: 1px solid var(--student-line); border-radius: 12px; background: var(--student-surface); box-shadow: var(--student-shadow); }
 .modal-actions { justify-content: flex-end; }
-@media (max-width: 760px) { .student-layout { display: block; } .company-page { padding: 28px 16px 92px; overflow-x: auto; } }
+@media (max-width: 760px) { .student-layout { display: block; } .company-page { padding: 28px 16px 92px; overflow-x: hidden; } }

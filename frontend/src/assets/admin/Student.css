@@ -6,4 +6,4 @@
 .csv-help p { margin: 0 0 8px; }
 .csv-help code, .csv-help pre { display: block; overflow-x: auto; margin: 0 0 10px; font: 12px/1.5 monospace; }
 .csv-help ul { margin: 0; padding-left: 18px; }
-@media (max-width: 760px) { .admin-layout { display: block; } .student-page { padding: 28px 16px 92px; overflow-x: auto; } }
+@media (max-width: 760px) { .admin-layout { display: block; } .student-page { padding: 28px 16px 92px; overflow-x: hidden; } }

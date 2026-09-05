@@ -23,13 +23,14 @@ const requiresAuth = computed(() => route.meta.requiresAuth === true)
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
+  overflow-x: hidden;
 }
 
 @media (max-width: 700px) {
   body:has(.admin-sidebar),
   body:has(.faculty-sidebar),
   body:has(.student-sidebar) {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
   }
 }
 </style>

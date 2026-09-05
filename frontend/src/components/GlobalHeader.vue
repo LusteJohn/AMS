@@ -57,7 +57,7 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
 
 <template>
   <header class="global-header">
-    <div>
+    <div class="header-identity">
       <strong>{{ user?.username || 'Loading session...' }}</strong>
       <span v-if="user">{{ user.email }}</span>
     </div>
@@ -67,7 +67,7 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
         <strong>{{ manilaClock() }}</strong>
       </div>
       <span v-if="user" class="role">{{ user.role }}</span>
-      <button type="button" :disabled="isLoggingOut" @click="logout">
+      <button class="logout-button" type="button" :disabled="isLoggingOut" @click="logout">
         {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
       </button>
     </div>
@@ -81,6 +81,8 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
   top: 0;
   z-index: 10;
   display: flex;
+  min-height: 76px;
+  box-sizing: border-box;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
@@ -90,6 +92,8 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
   color: #19313a;
   font: 14px 'Roboto', sans-serif;
 }
+.header-identity { min-width: 0; }
+.header-identity span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .global-header strong, .global-header span { display: block; }
 .global-header span { margin-top: 3px; color: #607980; font-size: 12px; }
 .header-actions { display: flex; align-items: center; gap: 14px; }
@@ -97,8 +101,18 @@ onBeforeUnmount(() => window.clearInterval(clockTimer))
 .clock span { margin-top: 0 !important; color: #b04a32 !important; font-size: 10px !important; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .clock strong { font-size: 13px; }
 .role { color: #b04a32 !important; font-weight: 700; text-transform: capitalize; }
-button { border: 1px solid #b9cbc6; border-radius: 4px; padding: 8px 12px; background: transparent; color: inherit; cursor: pointer; }
+.logout-button { border: 1px solid #83d1a7; border-radius: 8px; padding: 9px 14px; background: #83d1a7; color: #123126; cursor: pointer; font-weight: 700; }
+.logout-button:hover { background: #5fb889; border-color: #5fb889; }
 button:disabled { cursor: wait; opacity: .6; }
 .error { position: absolute; top: 100%; right: 24px; margin: 0; padding: 8px 12px; background: #fff0ed; color: #a33b2e; }
-@media (max-width: 700px) { .global-header { padding: 12px 16px; } .header-actions { gap: 8px; } .clock { min-width: 0; } .clock strong { font-size: 11px; } }
+@media (max-width: 700px) {
+  .global-header { align-items: stretch; flex-direction: column; gap: 10px; padding: 12px 16px; }
+  .header-identity { padding-right: 44px; }
+  .header-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 8px; }
+  .clock { min-width: 0; margin-right: 0; }
+  .clock strong { overflow: hidden; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+  .role { margin-top: 0 !important; white-space: nowrap; }
+  .logout-button { padding: 9px 11px; white-space: nowrap; }
+  .error { right: 16px; left: 16px; }
+}
 </style>
