@@ -2,4 +2,4 @@
 .company-page { flex: 1; min-width: 0; max-width: 1440px; padding: 40px clamp(20px, 4vw, 56px); background: var(--faculty-canvas); }
 .company-page > table { overflow: auto; border: 1px solid var(--faculty-line); border-radius: 12px; background: var(--faculty-surface); box-shadow: var(--faculty-shadow); }
 .modal-actions { justify-content: flex-end; }
-@media (max-width: 760px) { .faculty-layout { display: block; } .company-page { padding: 28px 16px 92px; overflow-x: auto; } }
+@media (max-width: 760px) { .faculty-layout { display: block; } .company-page { padding: 28px 16px 92px; overflow-x: hidden; } }
