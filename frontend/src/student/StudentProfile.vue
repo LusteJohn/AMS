@@ -9,11 +9,14 @@ const profile = ref(null)
 const sections = ref([])
 const isLoading = ref(false)
 const isSaving = ref(false)
+const isEditing = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 let messageTimer
 
 const formTitle = computed(() => profile.value ? 'Update profile' : 'Create profile')
+const fullName = computed(() => [profile.value?.firstname, profile.value?.middlename, profile.value?.lastname, profile.value?.name_ext].filter(Boolean).join(' ') || 'Student')
+const sectionLabel = computed(() => [profile.value?.section_name, profile.value?.program_name, profile.value?.college_name].filter(Boolean).join(' - ') || 'Assigned section')
 
 const form = ref({
   section_id: '',
@@ -38,6 +41,11 @@ function showMessage(type, message) {
 
 function apiError(error) {
   return error.response?.data?.message || error.message || 'Request failed.'
+}
+
+function cancelEdit() {
+  applyProfile(profile.value)
+  isEditing.value = false
 }
 
 function applyProfile(data) {
@@ -85,6 +93,7 @@ async function saveProfile() {
       : await api.post('/api/student/profile', payload)
 
     applyProfile(response.data?.data)
+    isEditing.value = false
     showMessage('success', `Profile ${isUpdate ? 'updated' : 'created'} successfully.`)
   } catch (error) {
     showMessage('error', apiError(error))
@@ -103,9 +112,10 @@ onMounted(loadProfile)
       <header class="page-header">
         <div>
           <p class="eyebrow">Student account</p>
-          <h1>{{ formTitle }}</h1>
-          <p>Keep your student information up to date.</p>
+          <h1>My profile</h1>
+          <p>View and manage your student information.</p>
         </div>
+        <button v-if="profile && !isEditing" type="button" @click="isEditing = true">Edit profile</button>
       </header>
 
       <div class="message-container" aria-live="polite">
@@ -114,6 +124,11 @@ onMounted(loadProfile)
       </div>
 
       <p v-if="isLoading">Loading profile...</p>
+      <section v-if="profile && !isEditing" class="profile-view-card">
+        <div class="profile-identity"><div class="profile-avatar">{{ fullName.charAt(0).toUpperCase() }}</div><div><h2>{{ fullName }}</h2><p>{{ profile.school_id || 'No school ID' }}</p><span class="profile-role">Student trainee</span></div></div>
+        <div class="profile-details"><div><span>School ID</span><strong>{{ profile.school_id || '-' }}</strong></div><div><span>Gender</span><strong>{{ profile.gender }}</strong></div><div><span>Section</span><strong>{{ sectionLabel }}</strong></div><div class="profile-detail-wide"><span>Address</span><strong>{{ profile.address }}</strong></div></div>
+      </section>
+
       <form v-else class="profile-form" @submit.prevent="saveProfile">
         <label>
           Section
@@ -157,9 +172,7 @@ onMounted(loadProfile)
           Address
           <textarea v-model.trim="form.address" required maxlength="255" rows="4"></textarea>
         </label>
-        <button type="submit" :disabled="isSaving">
-          {{ isSaving ? 'Saving...' : profile ? 'Update profile' : 'Create profile' }}
-        </button>
+        <div class="profile-actions"><button v-if="profile" type="button" :disabled="isSaving" @click="cancelEdit">Cancel</button><button type="submit" :disabled="isSaving">{{ isSaving ? 'Saving...' : profile ? 'Save changes' : 'Create profile' }}</button></div>
       </form>
     </main>
   </div>

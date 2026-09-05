@@ -42,6 +42,36 @@ class FacultyController extends Controller
         $this->json(['success' => true, 'data' => $profile]);
     }
 
+    public function updateProfile(): void
+    {
+        $this->requireCsrf();
+        $userId = $this->authenticatedUserId();
+        $current = $this->faculty->findByUserId($userId);
+        if (!$current) {
+            $this->response->notFound('Faculty profile not found');
+        }
+
+        $account = $this->validatedAccount(false);
+        $profile = $this->validatedProfile();
+        $connection = $this->faculty->getConnection();
+        try {
+            $connection->beginTransaction();
+            $this->users->updateUser((int) $current['user_id'], $account['username'], $account['email'], $account['password'] ?: null, 'faculty');
+            $this->faculty->updateProfile((int) $current['faculty_id'], $profile);
+            $connection->commit();
+        } catch (PDOException $exception) {
+            if ($connection->inTransaction()) {
+                $connection->rollBack();
+            }
+            if ((int) ($exception->errorInfo[1] ?? 0) === 1062) {
+                $this->response->error('Username or email is already registered', null, 409);
+            }
+            $this->response->serverError('Unable to update faculty profile');
+        }
+
+        $this->response->updated($this->faculty->findByUserId($userId), 'Faculty profile updated successfully');
+    }
+
     public function store(): void
     {
         $this->requireCsrf();
